@@ -22,6 +22,7 @@ run:
 deps:
 	$(GOGET) github.com/go-telegram-bot-api/telegram-bot-api
 	$(GOGET) github.com/globalsign/mgo
+	$(GOGET) go.mongodb.org/mongo-driver/bson/primitive
 
 
 

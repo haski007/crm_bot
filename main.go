@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"../errors"
 	"./botlogs"
@@ -12,7 +13,7 @@ import (
 
 var mainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Configuration " + emoji.Gear, "configs"),
+		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
 	),
 )
 
@@ -50,12 +51,22 @@ func main() {
 			switch update.CallbackQuery.Data {
 			case "home":
 				resp = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-					"Main menu " + emoji.House)
+					"Main menu "+emoji.House)
 				resp.ReplyMarkup = mainKeyboard
 			case "configs":
 				resp = handlers.ConfigsHandler(update)
 			case "add_product":
-				handlers.AddProductHandler(update, productsCollection, updates)
+				resp = handlers.AddProductHandler(bot, update, productsCollection, updates)
+				resp.ReplyMarkup = mainKeyboard
+			case "get_all_products":
+				resp = handlers.GetAllProductsHandler(bot, update, productsCollection)
+				resp.ReplyMarkup = mainKeyboard
+			}
+
+			// Edit product handle
+			if strings.Contains(update.CallbackQuery.Data, "remove_product") {
+				resp = handlers.RemoveProductHandler(update, productsCollection)
+				resp.ReplyMarkup = mainKeyboard
 			}
 
 			bot.Send(resp)
@@ -63,13 +74,12 @@ func main() {
 
 		// ---> Handle messages
 		if update.Message != nil {
-		
+
 			err := logger.MessageLog(update)
 			if err != nil {
 				errors.Println(err)
 			}
-			
-			
+
 			switch update.Message.Text {
 			case "/help":
 				resp = handlers.HelpHandler(update)
