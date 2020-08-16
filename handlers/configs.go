@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 
 	"../emoji"
 
@@ -27,8 +26,9 @@ func ConfigsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 // AddProductHandler adds product to database collection "products"
 func AddProductHandler(update tgbotapi.Update, productsCollection *mgo.Collection, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
+
 	
-	 := <-ch
+	resp := <-ch
 	answer := tgbotapi.NewMessage(resp.Message.Chat.ID, resp.Message.Text)
 
 	return answer
