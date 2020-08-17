@@ -16,6 +16,7 @@ var mainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
+		tgbotapi.NewInlineKeyboardButtonData("History "+emoji.UpLeftArrow, "history"),
 	),
 )
 
@@ -52,7 +53,8 @@ func main() {
 			switch update.CallbackQuery.Data {
 			case "home":
 				resp = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-					"Main menu "+emoji.House)
+					"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
+					emoji.HouseWithGarden+"..."+emoji.Car+"....")
 				resp.ReplyMarkup = mainKeyboard
 			case "configs":
 				resp = ConfigsHandler(update)
@@ -64,6 +66,8 @@ func main() {
 				resp.ReplyMarkup = mainKeyboard
 			case "purchase":
 				resp = GetProductTypesHandler(bot, update)
+			// case "history":
+			// 	resp = GetHistoryPeriodHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -91,10 +95,12 @@ func main() {
 			switch update.Message.Text {
 			case "/help":
 				resp = HelpHandler(update)
-				resp.ReplyMarkup = mainKeyboard
+			case "/register":
+				resp = RegisterUser(bot, update, updates)
+			case "/menu":
+				resp = ValidateUser(update)
 			default:
-				resp = tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-				resp.ReplyMarkup = mainKeyboard
+				resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" It's not a command! "+emoji.Warning)
 			}
 			bot.Send(resp)
 		}

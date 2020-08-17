@@ -19,14 +19,15 @@ var configsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home"),
+		tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
+		emoji.HouseWithGarden+"..."+emoji.Car+"....", "home"),
 	),
 )
 
 // ConfigsHandler handle "Configuration" callback (button)
 func ConfigsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		update.CallbackQuery.Message.Text)
+		emoji.Gear+" Configurations "+emoji.Gear)
 
 	resp.ReplyMarkup = configsKeyboard
 	return resp
