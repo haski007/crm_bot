@@ -4,14 +4,16 @@ import (
 	"log"
 	"strings"
 
-	"../errors"
 	"./botlogs"
 	"./emoji"
-	"./handlers"
+	"github.com/Haski007/go-errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var mainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Purchase "+emoji.Dollar, "purchase"),
+	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
 	),
@@ -45,7 +47,6 @@ func main() {
 	var resp tgbotapi.MessageConfig
 
 	for update := range updates {
-
 		// ---> Handle keyboard signals.
 		if update.CallbackQuery != nil {
 			switch update.CallbackQuery.Data {
@@ -54,18 +55,25 @@ func main() {
 					"Main menu "+emoji.House)
 				resp.ReplyMarkup = mainKeyboard
 			case "configs":
-				resp = handlers.ConfigsHandler(update)
+				resp = ConfigsHandler(update)
 			case "add_product":
-				resp = handlers.AddProductHandler(bot, update, productsCollection, updates)
+				resp = AddProductHandler(bot, update, updates)
 				resp.ReplyMarkup = mainKeyboard
 			case "get_all_products":
-				resp = handlers.GetAllProductsHandler(bot, update, productsCollection)
+				resp = GetAllProductsHandler(bot, update)
 				resp.ReplyMarkup = mainKeyboard
+			case "purchase":
+				resp = GetProductTypesHandler(bot, update)
 			}
 
-			// Edit product handle
+			// Handle callbacks with info
 			if strings.Contains(update.CallbackQuery.Data, "remove_product") {
-				resp = handlers.RemoveProductHandler(update, productsCollection)
+				resp = RemoveProductHandler(update)
+				resp.ReplyMarkup = mainKeyboard
+			} else if strings.Contains(update.CallbackQuery.Data, "purchase_product_type") {
+				resp = GetProductsByTypeHandler(bot, update)
+			} else if strings.Contains(update.CallbackQuery.Data, "purchase_product_name") {
+				resp = MakePurchaseHandler(bot, update, updates)
 				resp.ReplyMarkup = mainKeyboard
 			}
 
@@ -82,7 +90,7 @@ func main() {
 
 			switch update.Message.Text {
 			case "/help":
-				resp = handlers.HelpHandler(update)
+				resp = HelpHandler(update)
 				resp.ReplyMarkup = mainKeyboard
 			default:
 				resp = tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)

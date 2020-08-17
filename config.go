@@ -1,10 +1,10 @@
 package main
 
-import "os"
+// import "os"
 
 var (
 	// TOKEN given by BotFather to use telegram API CRM_BOT_TOKEN
-	TOKEN = os.Getenv("CRM_BOT_TOKEN")
+	TOKEN = "1324365499:AAHE66gy_D5vCr_hn0nrK_hgl-CNuNYGSJU"
 )
 
 const (
@@ -14,7 +14,7 @@ const (
 	// MongoPassword ...
 	MongoPassword = "Haski12345"
 	// MongoHostname ...
-	MongoHostname = "172.19.0.2"
+	MongoHostname = "172.18.0.2"
 	// MongoPort ...
 	MongoPort = "27017"
 )

@@ -4,7 +4,10 @@ import (
 	"github.com/globalsign/mgo"
 )
 
-var productsCollection *mgo.Collection
+var (
+	ProductsCollection  *mgo.Collection
+	PurchasesCollection *mgo.Collection
+)
 
 func initMongoDB() error {
 	session, err := mgo.Dial("mongodb://" + MongoUsername + ":" + MongoPassword + "@" + MongoHostname + ":" + MongoPort)
@@ -12,7 +15,8 @@ func initMongoDB() error {
 		return err
 	}
 
-	productsCollection = session.DB("crm_bot_db").C("products")
+	ProductsCollection = session.DB("crm_bot_db").C("products")
+	PurchasesCollection = session.DB("crm_bot_db").C("purchases")
 
 	if err = session.Ping(); err != nil {
 		return err

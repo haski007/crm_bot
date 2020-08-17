@@ -7,4 +7,5 @@ const (
 	Plus = "\U00002795"
 	Minus = "\U00002796"
 	Box = "\U0001F371"
+	Dollar = "\U0001F4B2"
 )
