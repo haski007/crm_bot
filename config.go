@@ -2,7 +2,6 @@ package main
 
 import "os"
 
-
 var (
 	// TOKEN given by BotFather to use telegram API CRM_BOT_TOKEN
 	TOKEN = os.Getenv("CRM_BOT_TOKEN")

@@ -74,8 +74,12 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbota
 			break
 		}
 	}
-
-	purchase.SaleDate = time.Now()
+	
+	timezone, err := time.LoadLocation("Europe/Kiev")
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {" + err.Error() + "}")
+	}
+	purchase.SaleDate = time.Now().In(timezone)
 
 	err = PurchasesCollection.Insert(purchase)
 	if err != nil {
