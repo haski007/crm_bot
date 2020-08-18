@@ -6,7 +6,6 @@ import (
 
 var (
 	ProductsCollection  *mgo.Collection
-	PurchasesCollection *mgo.Collection
 	UsersCollection *mgo.Collection
 )
 
@@ -17,7 +16,6 @@ func initMongoDB() error {
 	}
 
 	ProductsCollection = session.DB("crm_bot_db").C("products")
-	PurchasesCollection = session.DB("crm_bot_db").C("purchases")
 	UsersCollection = session.DB("crm_bot_db").C("users")
 
 	if err = session.Ping(); err != nil {

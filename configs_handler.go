@@ -75,7 +75,7 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 
 	var products []models.Product
 
-	ProductsCollection.Find(bson.M{}).All(&products)
+	ProductsCollection.Find(bson.M{}).Select(m{"_id":1, "name": 1, "type": 1, "price":1}).All(&products)
 
 	for i, prod := range products {
 		prod.Name = "*" + prod.Name + "*"

@@ -66,8 +66,12 @@ func main() {
 				resp.ReplyMarkup = mainKeyboard
 			case "purchase":
 				resp = GetProductTypesHandler(bot, update)
-			// case "history":
-			// 	resp = GetHistoryPeriodHandler(bot, update)
+			case "history":
+				resp = GetPurchasesHistoryHandler(bot, update)
+			case "curr_day_history":
+				resp = GetCurrentDayHistoryHandler(bot, update)
+			case "edit_purchases":
+				resp = EditPurchasesHandler(bot, update)
 			}
 
 			// Handle callbacks with info

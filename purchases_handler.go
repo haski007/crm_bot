@@ -17,7 +17,11 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 
 	ProductsCollection.Find(bson.M{}).Distinct("type", &types)
 
-	rows := make([][]tgbotapi.InlineKeyboardButton, len(types)/3+1)
+	countRows := len(types)/3
+	if countRows == 0 {
+		countRows++
+	}
+	rows := make([][]tgbotapi.InlineKeyboardButton, countRows)
 	var x int
 	for i, t := range types {
 		if i%3 == 0 && i != 0 {
@@ -61,11 +65,12 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbo
 func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
 	var purchase models.Purchase
 
-	purchase.ProductID = bson.ObjectIdHex((strings.Split(update.CallbackQuery.Data, " ")[1]))
+	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
+	productID := bson.ObjectIdHex(getID)
 
 	var err error
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:"))
 	for {
-		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:"))
 		update = <- ch
 		purchase.Amount, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
@@ -80,8 +85,12 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbota
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {" + err.Error() + "}")
 	}
 	purchase.SaleDate = time.Now().In(timezone)
-
-	err = PurchasesCollection.Insert(purchase)
+	purchase.ID = bson.NewObjectId()
+	
+	// ---> Build query
+	who := m{"_id" : productID}
+	pushToArray := m{"$push":m{"purchases":purchase}}
+	err = ProductsCollection.Update(who, pushToArray)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 	}

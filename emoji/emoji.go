@@ -13,4 +13,12 @@ const (
 	UpLeftArrow = "\U00002196"
 	Warning = "\U000026A0"
 	Tree = "\U0001F333"
+	GreenCircle = "\U0001F7E2"
+
+
+	PurchasesDelimiter = 	GreenCircle+GreenCircle+
+							GreenCircle+GreenCircle+
+							GreenCircle+GreenCircle+
+							GreenCircle+GreenCircle+
+							GreenCircle+GreenCircle + "\n"
 )
