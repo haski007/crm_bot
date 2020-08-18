@@ -1,7 +1,12 @@
 package main
 
 import (
+	"fmt"
+	// "./emoji"
 	"time"
+
+	"./emoji"
+	"./models"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -26,27 +31,39 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) t
 
 	// var product models.Product
 
-	// fromDate := getTodayStarTime()
-
-
-
-	// if err := P.Pipe(query).All(&purchases); err != nil {
-	// 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "*FAILED!* {"+err.Error()+"}")
-	// 	answer.ParseMode = "MarkDown"
-	// 	answer.ReplyMarkup = mainKeyboard
-	// 	return answer
-	// }
-
 	
-	// for i, pur := range purchases {
-	// 	fmt.Println(i, ") ", pur)
-	// }
-	// os.Exit(-1)
+	var products []models.Product
+	fromDate := getTodayStarTime()
+	
+	query := m{
+		"purchases": m{
+			"$elemMatch": m{
+				"sale_date" : m{
+					"$gt" :fromDate,
+				},
+			},
+		},
+	}
+	
+	err := ProductsCollection.Find(query).All(&products)
+	if err != nil {
+		return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "ERROR: " + err.Error())
+	}
+	
 
 	var message string
-	// for i, pur := range purchases {
-	// 	message += fmt.Sprintf("%s%3d)*%v*\n", emoji.PurchasesDelimiter, i, pur)
-	// }
+
+	var id int
+	for _, prod := range products {
+		i := len(prod.Purchases) - 1
+		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {
+			message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %.2f\nCash: %.2f\nSale Date: %v\n",
+				emoji.PurchasesDelimiter, id, prod.Name, prod.Type, prod.Purchases[i].Amount,
+				prod.Purchases[i].Amount * prod.Price, prod.Purchases[i].SaleDate.Format("02.01.2006 15:04:05"))
+			id++
+			i--
+		}
+	}
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, message)
 	answer.ParseMode = "MarkDown"
 	answer.ReplyMarkup = mainKeyboard
