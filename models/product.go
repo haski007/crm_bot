@@ -12,7 +12,7 @@ type Product struct {
 	Name      string        `json:"name" bson:"name"`
 	Type      string        `json:"type" bson:"type"`
 	Price     float64       `json:"price" bson:"price"`
-	Purchases []Purchase    `json:"purchases" bson:"purchases"`
+	Purchases []Purchase    `json:"-" bson:"purchases"`
 }
 
 // Purchase struct

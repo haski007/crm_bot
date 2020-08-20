@@ -87,6 +87,8 @@ func main() {
 				resp = GetCurrentDayStatsHandler(update)
 			case "remove_purchase":
 				resp = RemovePurchaseHandler(bot, update, updates)
+			case "/test":
+				resp = TestHandler(bot, update)
 			}
 
 			// Handle callbacks with info

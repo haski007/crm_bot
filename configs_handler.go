@@ -32,7 +32,6 @@ func ConfigsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 // AddProductHandler adds product to database collection "products"
 func AddProductHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
-
 	var prod models.Product
 
 	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:"))
@@ -72,7 +71,7 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 
 	var products []models.Product
 
-	ProductsCollection.Find(bson.M{}).Select(m{"_id": 1, "name": 1, "type": 1, "price": 1}).All(&products)
+	ProductsCollection.Find(bson.M{}).Select(m{"purchases":0}).All(&products)
 
 	for i, prod := range products {
 		prod.Name = "*" + prod.Name + "*"
