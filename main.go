@@ -6,9 +6,17 @@ import (
 
 	"./botlogs"
 	"./emoji"
+	"./models"
 	"github.com/Haski007/go-errors"
+	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
+
+var removePurchaseQueue = make(map[int]bool)
+
+var makePurchaseQueue = make(map[int]bson.ObjectId)
+
+var addProductQueue = make(map[int]*models.Product)
 
 var mainMenuButton = tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+
 "..Main Menu........"+emoji.HouseWithGarden+"..."+emoji.Car+"....", "home")
@@ -72,8 +80,7 @@ func main() {
 			case "configs":
 				resp = ConfigsHandler(update)
 			case "add_product":
-				resp = AddProductHandler(bot, update, updates)
-				resp.ReplyMarkup = mainKeyboard
+				resp = AddProductHandler(update)
 			case "get_all_products":
 				resp = GetAllProductsHandler(bot, update)
 				resp.ReplyMarkup = mainKeyboard
@@ -86,7 +93,7 @@ func main() {
 			case "curr_day_stats":
 				resp = GetCurrentDayStatsHandler(update)
 			case "remove_purchase":
-				resp = RemovePurchaseHandler(bot, update, updates)
+				resp = RemovePurchaseHandler(update)
 			case "/test":
 				resp = TestHandler(bot, update)
 			}
@@ -98,8 +105,7 @@ func main() {
 			} else if strings.Contains(update.CallbackQuery.Data, "purtyp") {
 				resp = GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
-				resp = MakePurchaseHandler(bot, update, updates)
-				resp.ReplyMarkup = mainKeyboard
+				resp = MakePurchaseHandler(update)
 			}
 
 			bot.Send(resp)
@@ -128,10 +134,18 @@ func main() {
 				case "remove_user":
 					resp = RemoveUserHandler(update)
 				default:
-					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)
-				}
+					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)				}
 			} else {
-				resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" It's not a command! "+emoji.Warning)
+				if _, ok := addProductQueue[update.Message.From.ID]; ok {
+					resp = addProduct(update)
+				} else if removePurchaseQueue[update.Message.From.ID] == true {
+					resp = removePurchase(update)
+				} else if _ , ok := makePurchaseQueue[update.Message.From.ID]; ok {
+					resp = makePurchase(update)
+				} else {
+					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
+						emoji.Warning+" It's not a command! "+emoji.Warning)
+				}
 			}
 			bot.Send(resp)
 		}

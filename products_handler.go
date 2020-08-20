@@ -30,42 +30,6 @@ func ConfigsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	return resp
 }
 
-// AddProductHandler adds product to database collection "products"
-func AddProductHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
-	var prod models.Product
-
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:"))
-	update = <-ch
-	prod.Name = update.Message.Text
-
-	bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product type:"))
-	update = <-ch
-	prod.Type = update.Message.Text
-
-	var err error
-	for {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product price:"))
-		update = <-ch
-		prod.Price, err = strconv.ParseFloat(update.Message.Text, 64)
-		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
-		} else {
-			break
-		}
-	}
-
-	var answer tgbotapi.MessageConfig
-
-	err = ProductsCollection.Insert(prod)
-	if err != nil {
-		answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has not beed added {"+err.Error()+"}")
-	} else {
-		answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has been added succesfully!")
-	}
-
-	return answer
-}
-
 // GetAllProductsHandler prints all produtcs from "products" collection.
 func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
 
@@ -101,4 +65,46 @@ func RemoveProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	}
 
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "The product has been removed succesfully!")
+}
+
+
+// AddProductHandler adds product to database collection "products"
+func AddProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+	addProductQueue[update.CallbackQuery.From.ID] = new(models.Product)
+	
+	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:")
+}
+
+// addProduct prompt user to get name, type and prise of product. Save it in DB
+func addProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
+	userID := update.Message.From.ID
+
+	prod := addProductQueue[update.Message.From.ID]
+
+	var err error
+	if prod.Name == "" {
+		prod.Name = update.Message.Text
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product type:")
+	} else if prod.Type == "" {
+		prod.Type = update.Message.Text
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product price:")
+	} else {
+		prod.Price, err = strconv.ParseFloat(update.Message.Text, 64)
+		if err != nil {
+			return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
+		}
+
+		var answer tgbotapi.MessageConfig
+
+		err = ProductsCollection.Insert(prod)
+		if err != nil {
+			answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has not beed added {"+err.Error()+"}")
+		} else {
+			answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has been added succesfully!")
+		}
+
+		delete(addProductQueue, userID)
+		answer.ReplyMarkup = mainKeyboard
+		return answer
+	}
 }

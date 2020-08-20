@@ -95,42 +95,6 @@ func GetCurrentDayStatsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	return answer
 }
 
-func RemovePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
-	defer func() {
-		err := recover()
-		fmt.Println("\n\n\n\n", err)
-	}()
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me id of purchase you want to remove:"))
-	update = <-ch
-
-	purchaseID := bson.ObjectIdHex(update.Message.Text)
-
-	who := m{
-		"purchases": m{
-			"$elemMatch": m{
-				"_id": purchaseID,
-			},
-		},
-	}
-	query := m{
-		"$pull": m{
-			"purchases": m{
-				"_id": purchaseID,
-			},
-		},
-	}
-
-	err := ProductsCollection.Update(who, query)
-	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
-	}
-
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "An purchase has been succesfully removed!")
-	answer.ReplyMarkup = mainKeyboard
-
-	return answer
-}
-
 func getTodayStartTime() time.Time {
 
 	t := time.Now().In(location)

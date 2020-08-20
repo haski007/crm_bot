@@ -12,12 +12,6 @@ import (
 )
 
 func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
-	defer func(){
-		err := recover()
-		bot.Send(tgbotapi.NewMessage(370649141, "Sometings went wrong" + err.(error).Error()))
-	}()
-
-
 	if count, _ := UsersCollection.Find(bson.M{"user_id": update.Message.From.ID}).Count(); count > 0 {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "You are registered already!\nUse /menu")
 	}

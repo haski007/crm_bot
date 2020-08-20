@@ -64,38 +64,77 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbo
 	return msg
 }
 
-func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
-	var purchase models.Purchase
-
+func MakePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+	
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
+	
+	makePurchaseQueue[update.CallbackQuery.From.ID] = productID
+	
+	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:")
+}
+
+func makePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
+	var purchase models.Purchase
 
 	var err error
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:"))
-	for {
-		update = <-ch
-		purchase.Amount, err = strconv.ParseFloat(update.Message.Text, 64)
-		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
-		} else {
-			break
-		}
+
+	purchase.Amount, err = strconv.ParseFloat(update.Message.Text, 64)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
 	}
 
-	// timezone, err := time.LoadLocation("Europe/Kiev")
-	// if err != nil {
-	// 	return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {" + err.Error() + "}")
-	// }
 	purchase.SaleDate = time.Now()
 	fmt.Println(purchase.SaleDate.Format("02.01.2006 15:04:05"))
 	purchase.ID = bson.NewObjectId()
 
 	// ---> Build query
-	who := m{"_id": productID}
+	who := m{"_id": makePurchaseQueue[update.Message.From.ID]}
 	pushToArray := m{"$push": m{"purchases": purchase}}
 	err = ProductsCollection.Update(who, pushToArray)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 	}
+
+	delete(makePurchaseQueue, update.Message.From.ID)	
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been added succesfully")
+
+}
+
+func RemovePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+	removePurchaseQueue[update.CallbackQuery.From.ID] = true
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me id of purchase you want to remove:")
+
+	return answer
+}
+
+func removePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
+	purchaseID := bson.ObjectIdHex(update.Message.Text)
+
+	who := m{
+		"purchases": m{
+			"$elemMatch": m{
+				"_id": purchaseID,
+			},
+		},
+	}
+
+	query := m{
+		"$pull": m{
+			"purchases": m{
+				"_id": purchaseID,
+			},
+		},
+	}
+
+	err := ProductsCollection.Update(who, query)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
+	}
+
+	delete(removePurchaseQueue, update.Message.From.ID)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "An purchase has been succesfully removed!")
+	answer.ReplyMarkup = mainKeyboard
+
+	return answer
 }
