@@ -9,7 +9,10 @@
 * Total amount
 ## History:
 * All purchases that were made for today
-* The ability to delete any purchase 
+* The ability to delete any purchase
+## Future features:
+* Statistics for whole month
+* Statistics which product sells best and which sells least
 ### To register you need to write your boss or author of bot https://t.me/pdemian
 
 ![](/assets/images/adding_purchase.gif)
