@@ -10,4 +10,4 @@
 
 ## Bot host on Google Cloud Platform. Database - mongoDB.
 
-docker-compose up -d --build` - to build docker-compose with mongoDB
+`docker-compose up -d --build` - to build docker-compose with mongoDB
