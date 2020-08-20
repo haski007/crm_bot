@@ -15,6 +15,6 @@
 ![](/assets/images/adding_purchase.gif)
 ![](/assets/images/getting_statistics.gif)
 
-## Bot host on Google Cloud Platform. Database - mongoDB.
+## Bot hosted on Google Cloud Platform. Database - mongoDB.
 
 `docker-compose up -d --build` - to build docker-compose with mongoDB
