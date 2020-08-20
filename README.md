@@ -5,9 +5,11 @@
 * admins - founderds or cofounders of business. They can remove users, add new products. They receive statistics every day at 23:00 by Europe/Kiev.
 ## Statistics:
 * All sold products for whole day
-* Quantity of sold products.
-* Total amount.
-
+* Quantity of sold products
+* Total amount
+## History:
+* All purchases that were made for today
+* The ability to delete any purchase 
 ### To register you need to write your boss or author of bot https://t.me/pdemian
 
 ![](/assets/images/adding_purchase.gif)
