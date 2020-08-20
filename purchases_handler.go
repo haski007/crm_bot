@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+
 	"time"
 
 	"./emoji"
@@ -17,7 +19,7 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 
 	ProductsCollection.Find(bson.M{}).Distinct("type", &types)
 
-	countRows := len(types)/3
+	countRows := len(types) / 3
 	if countRows == 0 {
 		countRows++
 	}
@@ -27,7 +29,7 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 		if i%3 == 0 && i != 0 {
 			x++
 		}
-		rows[x] = append(rows[x], tgbotapi.NewInlineKeyboardButtonData(t, "purchase_product_type "+t))
+		rows[x] = append(rows[x], tgbotapi.NewInlineKeyboardButtonData(t, "purtyp "+t))
 	}
 
 	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
@@ -50,7 +52,7 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbo
 
 	for _, prod := range prods {
 		rows = append(rows, []tgbotapi.InlineKeyboardButton{
-			tgbotapi.NewInlineKeyboardButtonData(prod.Name, "purchase_product_name "+prod.ID.Hex()),
+			tgbotapi.NewInlineKeyboardButtonData(prod.Name, "purname "+prod.ID.Hex()),
 		})
 	}
 	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
@@ -71,7 +73,7 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbota
 	var err error
 	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:"))
 	for {
-		update = <- ch
+		update = <-ch
 		purchase.Amount, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
@@ -79,17 +81,18 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbota
 			break
 		}
 	}
-	
+
 	// timezone, err := time.LoadLocation("Europe/Kiev")
 	// if err != nil {
 	// 	return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {" + err.Error() + "}")
 	// }
-	purchase.SaleDate = time.Now().Add(3 * time.Hour)
+	purchase.SaleDate = time.Now()
+	fmt.Println(purchase.SaleDate.Format("02.01.2006 15:04:05"))
 	purchase.ID = bson.NewObjectId()
-	
+
 	// ---> Build query
-	who := m{"_id" : productID}
-	pushToArray := m{"$push":m{"purchases":purchase}}
+	who := m{"_id": productID}
+	pushToArray := m{"$push": m{"purchases": purchase}}
 	err = ProductsCollection.Update(who, pushToArray)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")

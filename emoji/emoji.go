@@ -14,11 +14,17 @@ const (
 	Warning = "\U000026A0"
 	Tree = "\U0001F333"
 	GreenCircle = "\U0001F7E2"
+	Basket = "\U0001F5D1"
+	GraphicIncrease = "\U0001F4C8"
+	Clover = "\U0001F340"
+	Recucling = "\U0000267B"
 
 
-	PurchasesDelimiter = 	GreenCircle+GreenCircle+
-							GreenCircle+GreenCircle+
-							GreenCircle+GreenCircle+
-							GreenCircle+GreenCircle+
-							GreenCircle+GreenCircle + "\n"
+	PurchasesDelimiter = 	Clover+Clover+
+							Clover+Clover+
+							Clover+Clover+
+							Clover+Clover+
+							Clover+Clover+
+							Clover+Clover+
+							Clover+Clover + "\n"
 )

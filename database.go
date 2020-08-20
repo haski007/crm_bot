@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	ProductsCollection  *mgo.Collection
-	UsersCollection *mgo.Collection
+	ProductsCollection *mgo.Collection
+	UsersCollection    *mgo.Collection
 )
 
 func initMongoDB() error {

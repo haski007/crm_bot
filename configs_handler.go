@@ -18,10 +18,7 @@ var configsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
 		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
 	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
-		emoji.HouseWithGarden+"..."+emoji.Car+"....", "home"),
-	),
+	tgbotapi.NewInlineKeyboardRow(mainMenuButton),
 )
 
 // ConfigsHandler handle "Configuration" callback (button)
@@ -75,7 +72,7 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 
 	var products []models.Product
 
-	ProductsCollection.Find(bson.M{}).Select(m{"_id":1, "name": 1, "type": 1, "price":1}).All(&products)
+	ProductsCollection.Find(bson.M{}).Select(m{"_id": 1, "name": 1, "type": 1, "price": 1}).All(&products)
 
 	for i, prod := range products {
 		prod.Name = "*" + prod.Name + "*"

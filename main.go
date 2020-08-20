@@ -10,13 +10,16 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var mainMenuButton = tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+
+"..Main Menu........"+emoji.HouseWithGarden+"..."+emoji.Car+"....", "home")
+
 var mainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Purchase "+emoji.Dollar, "purchase"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
-		tgbotapi.NewInlineKeyboardButtonData("History "+emoji.UpLeftArrow, "history"),
+		tgbotapi.NewInlineKeyboardButtonData("Statistics "+emoji.GraphicIncrease, "stats"),
 	),
 )
 
@@ -32,6 +35,8 @@ func main() {
 		return
 	}
 	bot.Debug = true
+
+	go initEveryDayStatistics(bot)
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -50,11 +55,19 @@ func main() {
 	for update := range updates {
 		// ---> Handle keyboard signals.
 		if update.CallbackQuery != nil {
+			// ---> Validate user
+			if !isUser(update.CallbackQuery.From) {
+				resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "*FORBIDDEN!* you are not registered!\n"+
+					"You can register by /register")
+				resp.ParseMode = "Markdown"
+				bot.Send(resp)
+				continue
+			}
 			switch update.CallbackQuery.Data {
 			case "home":
 				resp = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
 					"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
-					emoji.HouseWithGarden+"..."+emoji.Car+"....")
+						emoji.HouseWithGarden+"..."+emoji.Car+"....")
 				resp.ReplyMarkup = mainKeyboard
 			case "configs":
 				resp = ConfigsHandler(update)
@@ -66,21 +79,23 @@ func main() {
 				resp.ReplyMarkup = mainKeyboard
 			case "purchase":
 				resp = GetProductTypesHandler(bot, update)
-			case "history":
-				resp = GetPurchasesHistoryHandler(bot, update)
+			case "stats":
+				resp = GetStatisticsHandler(bot, update)
 			case "curr_day_history":
 				resp = GetCurrentDayHistoryHandler(bot, update)
-			case "edit_purchases":
-				resp = EditPurchasesHandler(bot, update)
+			case "curr_day_stats":
+				resp = GetCurrentDayStatsHandler(update)
+			case "remove_purchase":
+				resp = RemovePurchaseHandler(bot, update, updates)
 			}
 
 			// Handle callbacks with info
 			if strings.Contains(update.CallbackQuery.Data, "remove_product") {
 				resp = RemoveProductHandler(update)
 				resp.ReplyMarkup = mainKeyboard
-			} else if strings.Contains(update.CallbackQuery.Data, "purchase_product_type") {
+			} else if strings.Contains(update.CallbackQuery.Data, "purtyp") {
 				resp = GetProductsByTypeHandler(bot, update)
-			} else if strings.Contains(update.CallbackQuery.Data, "purchase_product_name") {
+			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
 				resp = MakePurchaseHandler(bot, update, updates)
 				resp.ReplyMarkup = mainKeyboard
 			}
@@ -96,14 +111,24 @@ func main() {
 				errors.Println(err)
 			}
 
-			switch update.Message.Text {
-			case "/help":
-				resp = HelpHandler(update)
-			case "/register":
-				resp = RegisterUser(bot, update, updates)
-			case "/menu":
-				resp = ValidateUser(update)
-			default:
+			if command := update.Message.CommandWithAt(); command != "" {
+				switch command {
+				case "help":
+					resp = HelpHandler(update)
+				case "register":
+					resp = RegisterUser(bot, update, updates)
+				case "menu":
+					resp = MenuHandler(update)
+				case "start":
+					resp = StartHandler(update)
+				case "users":
+					resp = GetAllUsers(update)
+				case "remove_user":
+					resp = RemoveUserHandler(update)
+				default:
+					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)
+				}
+			} else {
 				resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" It's not a command! "+emoji.Warning)
 			}
 			bot.Send(resp)
