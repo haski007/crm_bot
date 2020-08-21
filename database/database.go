@@ -1,6 +1,9 @@
-package main
+package database
 
 import (
+	"log"
+
+	"../betypes"
 	"github.com/globalsign/mgo"
 )
 
@@ -9,17 +12,16 @@ var (
 	UsersCollection    *mgo.Collection
 )
 
-func initMongoDB() error {
-	session, err := mgo.Dial("mongodb://" + MongoUsername + ":" + MongoPassword + "@" + MongoHostname + ":" + MongoPort)
+func init() {
+	session, err := mgo.Dial("mongodb://" + betypes.MongoUsername + ":" + betypes.MongoPassword + "@" + betypes.MongoHostname + ":" + betypes.MongoPort)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	ProductsCollection = session.DB("crm_bot_db").C("products")
 	UsersCollection = session.DB("crm_bot_db").C("users")
 
 	if err = session.Ping(); err != nil {
-		return err
+		log.Fatal(err)
 	}
-	return nil
 }

@@ -1,4 +1,4 @@
-package models
+package betypes
 
 import (
 	"time"
@@ -20,4 +20,5 @@ type Purchase struct {
 	ID       bson.ObjectId `bson:"_id,omitempty"`
 	Amount   float64       `bson:"amount"`
 	SaleDate time.Time     `bson:"sale_date"`
+	Seller   string           `bson:"seller"`
 }

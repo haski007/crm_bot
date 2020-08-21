@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"./betypes"
+	"./database"
 	"./emoji"
-	"./models"
+	"./keyboards"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -23,7 +25,7 @@ func GetStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi
 			tgbotapi.NewInlineKeyboardButtonData("Get today's stats"+emoji.GraphicIncrease, "curr_day_stats"),
 		),
 		tgbotapi.NewInlineKeyboardRow(
-			mainMenuButton,
+			keyboards.MainMenuButton,
 		),
 	)
 	answer.ReplyMarkup = historyKeyboard
@@ -32,7 +34,7 @@ func GetStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi
 }
 
 func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
-	var products []models.Product
+	var products []betypes.Product
 	fromDate := getTodayStartTime()
 
 	query := m{
@@ -45,7 +47,7 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) t
 		},
 	}
 
-	err := ProductsCollection.Find(query).All(&products)
+	err := database.ProductsCollection.Find(query).All(&products)
 	if err != nil {
 		return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "ERROR: "+err.Error())
 	}
@@ -56,9 +58,12 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) t
 	for _, prod := range products {
 		i := len(prod.Purchases) - 1
 		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {
-			message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %.2f\nCash: %.2f\nSale Date: %v\n%s\n",
+			message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %.2f\nCash: %.2f\nSeller: @%s\nSale Date: %v\n%s\n",
 				emoji.PurchasesDelimiter, id, prod.Name, prod.Type, prod.Purchases[i].Amount,
-				prod.Purchases[i].Amount*prod.Price, prod.Purchases[i].SaleDate.In(location).Format("02.01.2006 15:04:05"), prod.Purchases[i].ID.String())
+				prod.Purchases[i].Amount*prod.Price,
+				prod.Purchases[i].Seller,
+				prod.Purchases[i].SaleDate.In(location).Format("02.01.2006 15:04:05"),
+				prod.Purchases[i].ID.String())
 			id++
 			i--
 		}
@@ -91,7 +96,7 @@ func GetCurrentDayStatsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	message := getDailyStatistics()
 
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, message)
-	answer.ReplyMarkup = mainKeyboard
+	answer.ReplyMarkup = keyboards.MainMenu
 	return answer
 }
 

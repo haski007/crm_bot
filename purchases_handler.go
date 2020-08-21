@@ -1,14 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	"time"
 
+	"./betypes"
+	"./database"
 	"./emoji"
-	"./models"
+	"./keyboards"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -17,7 +18,7 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 
 	var types []string
 
-	ProductsCollection.Find(bson.M{}).Distinct("type", &types)
+	database.ProductsCollection.Find(bson.M{}).Distinct("type", &types)
 
 	countRows := len(types) / 3
 	if countRows == 0 {
@@ -44,9 +45,9 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 
 func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
 	t := strings.Join(strings.Split(update.CallbackQuery.Data, " ")[1:], " ")
-	var prods []models.Product
+	var prods []betypes.Product
 
-	ProductsCollection.Find(bson.M{"type": t}).All(&prods)
+	database.ProductsCollection.Find(bson.M{"type": t}).All(&prods)
 
 	var rows [][]tgbotapi.InlineKeyboardButton
 
@@ -65,17 +66,17 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbo
 }
 
 func MakePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
-	
+
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
-	
+
 	makePurchaseQueue[update.CallbackQuery.From.ID] = productID
-	
+
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:")
 }
 
 func makePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
-	var purchase models.Purchase
+	var purchase betypes.Purchase
 
 	var err error
 
@@ -85,19 +86,22 @@ func makePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 	}
 
 	purchase.SaleDate = time.Now()
-	fmt.Println(purchase.SaleDate.Format("02.01.2006 15:04:05"))
 	purchase.ID = bson.NewObjectId()
+	purchase.Seller = update.Message.From.UserName
+
 
 	// ---> Build query
 	who := m{"_id": makePurchaseQueue[update.Message.From.ID]}
 	pushToArray := m{"$push": m{"purchases": purchase}}
-	err = ProductsCollection.Update(who, pushToArray)
+	err = database.ProductsCollection.Update(who, pushToArray)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 	}
 
-	delete(makePurchaseQueue, update.Message.From.ID)	
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been added succesfully")
+	delete(makePurchaseQueue, update.Message.From.ID)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been added succesfully")
+	answer.ReplyMarkup = keyboards.MainMenu
+	return answer
 
 }
 
@@ -127,14 +131,14 @@ func removePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 		},
 	}
 
-	err := ProductsCollection.Update(who, query)
+	err := database.ProductsCollection.Update(who, query)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
 	}
 
 	delete(removePurchaseQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "An purchase has been succesfully removed!")
-	answer.ReplyMarkup = mainKeyboard
+	answer.ReplyMarkup = keyboards.MainMenu
 
 	return answer
 }

@@ -5,14 +5,16 @@ import (
 	"strconv"
 	"strings"
 
+	"./betypes"
+	"./database"
 	"./emoji"
-	"./models"
+	"./keyboards"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
-	if count, _ := UsersCollection.Find(bson.M{"user_id": update.Message.From.ID}).Count(); count > 0 {
+	if count, _ := database.UsersCollection.Find(bson.M{"user_id": update.Message.From.ID}).Count(); count > 0 {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "You are registered already!\nUse /menu")
 	}
 
@@ -20,7 +22,7 @@ func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.Upda
 	bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Send me secret password:"))
 	for {
 		update = <-ch
-		if update.Message.Text == SECRET_VASSAL_PASSWORD || update.Message.Text == SECRET_LORD_PASSWORD {
+		if update.Message.Text == betypes.SECRET_VASSAL_PASSWORD || update.Message.Text == betypes.SECRET_LORD_PASSWORD {
 			break
 		} else if tries > 1 {
 			return tgbotapi.NewMessage(update.Message.Chat.ID, "You have used 3 tries, try again /register\n"+
@@ -33,13 +35,13 @@ func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.Upda
 		}
 	}
 
-	var user models.User
+	var user betypes.User
 
 	user.FirstName = update.Message.From.FirstName
 	user.LastName = update.Message.From.LastName
 	user.UserName = update.Message.From.UserName
 	user.UserID = update.Message.From.ID
-	if update.Message.Text == SECRET_LORD_PASSWORD {
+	if update.Message.Text == betypes.SECRET_LORD_PASSWORD {
 		user.Status = "admin"
 	} else {
 		user.Status = "user"
@@ -47,7 +49,7 @@ func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update, ch tgbotapi.Upda
 
 	sendInfoToAdmins(bot, fmt.Sprintf("New user has been registred: %s (%s)", user.FirstName, user.UserName))
 
-	err := UsersCollection.Insert(user)
+	err := database.UsersCollection.Insert(user)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Registration has been FAILED {"+err.Error()+"}")
 	}
@@ -68,7 +70,7 @@ func MenuHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 		"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
 			emoji.HouseWithGarden+"..."+emoji.Car+"....")
-	answer.ReplyMarkup = mainKeyboard
+	answer.ReplyMarkup = keyboards.MainMenu
 	return answer
 }
 
@@ -76,10 +78,10 @@ func GetAllUsers(update tgbotapi.Update) tgbotapi.MessageConfig {
 	if !isAdmin(update.Message.From) {
 		return msgNotEnoughPermissions(update.CallbackQuery.Message)
 	}
-	
-	var users []models.User
 
-	err := UsersCollection.Find(nil).All(&users)
+	var users []betypes.User
+
+	err := database.UsersCollection.Find(nil).All(&users)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
 	}
@@ -103,23 +105,23 @@ func RemoveUserHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	args := strings.Fields(update.Message.CommandArguments())
 
 	for _, arg := range args {
-		err := UsersCollection.RemoveId(bson.ObjectIdHex(arg))
+		err := database.UsersCollection.RemoveId(bson.ObjectIdHex(arg))
 		if err != nil {
 			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
-			answer.ReplyMarkup = mainKeyboard
+			answer.ReplyMarkup = keyboards.MainMenu
 			return answer
 		}
 	}
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 		strconv.Itoa(len(args))+" users has been removed!"+emoji.Recucling+"\n")
-	answer.ReplyMarkup = mainKeyboard
+	answer.ReplyMarkup = keyboards.MainMenu
 	return answer
 }
 
 func isAdmin(from *tgbotapi.User) bool {
-	var user models.User
+	var user betypes.User
 
-	err := UsersCollection.Find(m{"user_id": from.ID}).One(&user)
+	err := database.UsersCollection.Find(m{"user_id": from.ID}).One(&user)
 	if err != nil {
 		return false
 	}
@@ -131,7 +133,7 @@ func isAdmin(from *tgbotapi.User) bool {
 }
 
 func isUser(from *tgbotapi.User) bool {
-	count, err := UsersCollection.Find(m{"user_id": from.ID}).Count()
+	count, err := database.UsersCollection.Find(m{"user_id": from.ID}).Count()
 	if err != nil || count < 1 {
 		return false
 	}

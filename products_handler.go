@@ -5,8 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	"./betypes"
+	"./database"
+	"./keyboards"
 	"./emoji"
-	"./models"
 
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -18,7 +20,7 @@ var configsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
 		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
 	),
-	tgbotapi.NewInlineKeyboardRow(mainMenuButton),
+	tgbotapi.NewInlineKeyboardRow(keyboards.MainMenuButton),
 )
 
 // ConfigsHandler handle "Configuration" callback (button)
@@ -33,9 +35,9 @@ func ConfigsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 // GetAllProductsHandler prints all produtcs from "products" collection.
 func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
 
-	var products []models.Product
+	var products []betypes.Product
 
-	ProductsCollection.Find(bson.M{}).Select(m{"purchases":0}).All(&products)
+	database.ProductsCollection.Find(bson.M{}).Select(m{"purchases": 0}).All(&products)
 
 	for i, prod := range products {
 		prod.Name = "*" + prod.Name + "*"
@@ -59,7 +61,7 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 func RemoveProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	prodID := strings.Split(update.CallbackQuery.Data, " ")[1]
 
-	err := ProductsCollection.Remove(bson.M{"_id": bson.ObjectIdHex(prodID)})
+	err := database.ProductsCollection.Remove(bson.M{"_id": bson.ObjectIdHex(prodID)})
 	if err != nil {
 		return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Removing has been FAILED! {"+err.Error()+"}")
 	}
@@ -67,11 +69,10 @@ func RemoveProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "The product has been removed succesfully!")
 }
 
-
 // AddProductHandler adds product to database collection "products"
 func AddProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
-	addProductQueue[update.CallbackQuery.From.ID] = new(models.Product)
-	
+	addProductQueue[update.CallbackQuery.From.ID] = new(betypes.Product)
+
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:")
 }
 
@@ -96,7 +97,7 @@ func addProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 		var answer tgbotapi.MessageConfig
 
-		err = ProductsCollection.Insert(prod)
+		err = database.ProductsCollection.Insert(prod)
 		if err != nil {
 			answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has not beed added {"+err.Error()+"}")
 		} else {
@@ -104,7 +105,7 @@ func addProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 		}
 
 		delete(addProductQueue, userID)
-		answer.ReplyMarkup = mainKeyboard
+		answer.ReplyMarkup = keyboards.MainMenu
 		return answer
 	}
 }

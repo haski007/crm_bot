@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"./models"
+	"./betypes"
+	"./database"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -29,11 +30,11 @@ func initEveryDayStatistics(bot *tgbotapi.BotAPI) {
 
 func getDailyStatistics() string {
 
-	var products []models.Product
+	var products []betypes.Product
 
 	fromDate := getTodayStartTime()
 
-	ProductsCollection.Find(nil).All(&products)
+	database.ProductsCollection.Find(nil).All(&products)
 
 	var totalSum float64
 
@@ -56,9 +57,9 @@ func getDailyStatistics() string {
 }
 
 func sendInfoToAdmins(bot *tgbotapi.BotAPI, message string) {
-	var admins []models.User
+	var admins []betypes.User
 
-	err := UsersCollection.Find(m{"status": "admin"}).All(&admins)
+	err := database.UsersCollection.Find(m{"status": "admin"}).All(&admins)
 	if err != nil {
 		bot.Send(tgbotapi.NewMessage(370649141, "ALARM: Something went wrong!!!!"))
 	}

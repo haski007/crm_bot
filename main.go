@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
+	"./betypes"
 	"./botlogs"
 	"./emoji"
-	"./models"
+	"./keyboards"
 	"github.com/Haski007/go-errors"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -16,28 +18,10 @@ var removePurchaseQueue = make(map[int]bool)
 
 var makePurchaseQueue = make(map[int]bson.ObjectId)
 
-var addProductQueue = make(map[int]*models.Product)
-
-var mainMenuButton = tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+
-"..Main Menu........"+emoji.HouseWithGarden+"..."+emoji.Car+"....", "home")
-
-var mainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Purchase "+emoji.Dollar, "purchase"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
-		tgbotapi.NewInlineKeyboardButtonData("Statistics "+emoji.GraphicIncrease, "stats"),
-	),
-)
+var addProductQueue = make(map[int]*betypes.Product)
 
 func main() {
-	err := initMongoDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot, err := tgbotapi.NewBotAPI(TOKEN)
+	bot, err := tgbotapi.NewBotAPI(betypes.BOT_TOKEN)
 	if err != nil {
 		errors.Println(err)
 		return
@@ -60,6 +44,13 @@ func main() {
 
 	var resp tgbotapi.MessageConfig
 
+	defer func() {
+
+		if er := recover(); er != nil {
+			bot.Send(tgbotapi.NewMessage(370649141, fmt.Sprintf("%+v\n", er)))
+		}
+	}()
+
 	for update := range updates {
 		// ---> Handle keyboard signals.
 		if update.CallbackQuery != nil {
@@ -76,14 +67,14 @@ func main() {
 				resp = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
 					"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
 						emoji.HouseWithGarden+"..."+emoji.Car+"....")
-				resp.ReplyMarkup = mainKeyboard
+				resp.ReplyMarkup = keyboards.MainMenu
 			case "configs":
 				resp = ConfigsHandler(update)
 			case "add_product":
 				resp = AddProductHandler(update)
 			case "get_all_products":
 				resp = GetAllProductsHandler(bot, update)
-				resp.ReplyMarkup = mainKeyboard
+				resp.ReplyMarkup = keyboards.MainMenu
 			case "purchase":
 				resp = GetProductTypesHandler(bot, update)
 			case "stats":
@@ -101,7 +92,7 @@ func main() {
 			// Handle callbacks with info
 			if strings.Contains(update.CallbackQuery.Data, "remove_product") {
 				resp = RemoveProductHandler(update)
-				resp.ReplyMarkup = mainKeyboard
+				resp.ReplyMarkup = keyboards.MainMenu
 			} else if strings.Contains(update.CallbackQuery.Data, "purtyp") {
 				resp = GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
@@ -134,13 +125,14 @@ func main() {
 				case "remove_user":
 					resp = RemoveUserHandler(update)
 				default:
-					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)				}
+					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)
+				}
 			} else {
 				if _, ok := addProductQueue[update.Message.From.ID]; ok {
 					resp = addProduct(update)
 				} else if removePurchaseQueue[update.Message.From.ID] == true {
 					resp = removePurchase(update)
-				} else if _ , ok := makePurchaseQueue[update.Message.From.ID]; ok {
+				} else if _, ok := makePurchaseQueue[update.Message.From.ID]; ok {
 					resp = makePurchase(update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,

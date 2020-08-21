@@ -1,4 +1,4 @@
-package models
+package betypes
 
 import "github.com/globalsign/mgo/bson"
 
