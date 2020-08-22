@@ -9,16 +9,14 @@ import (
 	"./botlogs"
 	"./emoji"
 	"./keyboards"
+	"./handlers"
+	"./handlers/settings"
+	"./handlers/statistics"
+	"./handlers/purchases"
+	"./handlers/users"
 	"github.com/Haski007/go-errors"
-	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
-
-var removePurchaseQueue = make(map[int]bool)
-
-var makePurchaseQueue = make(map[int]bson.ObjectId)
-
-var addProductQueue = make(map[int]*betypes.Product)
 
 func main() {
 	bot, err := tgbotapi.NewBotAPI(betypes.BOT_TOKEN)
@@ -28,7 +26,7 @@ func main() {
 	}
 	bot.Debug = true
 
-	go initEveryDayStatistics(bot)
+	go statistics.InitEveryDayStatistics(bot)
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -55,7 +53,7 @@ func main() {
 		// ---> Handle keyboard signals.
 		if update.CallbackQuery != nil {
 			// ---> Validate user
-			if !isUser(update.CallbackQuery.From) {
+			if !users.IsUser(update.CallbackQuery.From) {
 				resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "*FORBIDDEN!* you are not registered!\n"+
 					"You can register by /register")
 				resp.ParseMode = "Markdown"
@@ -64,39 +62,33 @@ func main() {
 			}
 			switch update.CallbackQuery.Data {
 			case "home":
-				resp = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-					"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
-						emoji.HouseWithGarden+"..."+emoji.Car+"....")
-				resp.ReplyMarkup = keyboards.MainMenu
+				resp = handlers.MainMenuHandler(update)
 			case "configs":
-				resp = ConfigsHandler(update)
+				resp = settings.SettingsHandler(update)
 			case "add_product":
-				resp = AddProductHandler(update)
+				resp = settings.AddProductHandler(update)
 			case "get_all_products":
-				resp = GetAllProductsHandler(bot, update)
-				resp.ReplyMarkup = keyboards.MainMenu
+				resp = settings.GetAllProductsHandler(bot, update)
 			case "purchase":
-				resp = GetProductTypesHandler(bot, update)
+				resp = purchases.GetProductTypesHandler(bot, update)
 			case "stats":
-				resp = GetStatisticsHandler(bot, update)
+				resp = statistics.GetStatisticsHandler(bot, update)
 			case "curr_day_history":
-				resp = GetCurrentDayHistoryHandler(bot, update)
+				resp = statistics.GetCurrentDayHistoryHandler(bot, update)
 			case "curr_day_stats":
-				resp = GetCurrentDayStatsHandler(update)
+				resp = statistics.GetCurrentDayStatsHandler(update)
 			case "remove_purchase":
-				resp = RemovePurchaseHandler(update)
-			case "/test":
-				resp = TestHandler(bot, update)
+				resp = purchases.RemovePurchaseHandler(update)
 			}
 
 			// Handle callbacks with info
 			if strings.Contains(update.CallbackQuery.Data, "remove_product") {
-				resp = RemoveProductHandler(update)
+				resp = settings.RemoveProductHandler(update)
 				resp.ReplyMarkup = keyboards.MainMenu
 			} else if strings.Contains(update.CallbackQuery.Data, "purtyp") {
-				resp = GetProductsByTypeHandler(bot, update)
+				resp = purchases.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
-				resp = MakePurchaseHandler(update)
+				resp = purchases.MakePurchaseHandler(update)
 			}
 
 			bot.Send(resp)
@@ -113,27 +105,27 @@ func main() {
 			if command := update.Message.CommandWithAt(); command != "" {
 				switch command {
 				case "help":
-					resp = HelpHandler(update)
+					resp = handlers.CommandHelpHandler(update)
 				case "register":
-					resp = RegisterUser(bot, update, updates)
+					resp = users.RegisterUser(bot, update, updates)
 				case "menu":
-					resp = MenuHandler(update)
+					resp = handlers.CommandMenuHandler(update)
 				case "start":
-					resp = StartHandler(update)
+					resp = handlers.CommandStartHandler(update)
 				case "users":
-					resp = GetAllUsers(update)
+					resp = handlers.CommandUsersHandler(update)
 				case "remove_user":
-					resp = RemoveUserHandler(update)
+					resp = handlers.CommandRemoveUserHandler(update)
 				default:
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)
 				}
 			} else {
-				if _, ok := addProductQueue[update.Message.From.ID]; ok {
-					resp = addProduct(update)
-				} else if removePurchaseQueue[update.Message.From.ID] == true {
-					resp = removePurchase(update)
-				} else if _, ok := makePurchaseQueue[update.Message.From.ID]; ok {
-					resp = makePurchase(update)
+				if _, ok := settings.AddProductQueue[update.Message.From.ID]; ok {
+					resp = settings.AddProduct(update)
+				} else if purchases.RemovePurchaseQueue[update.Message.From.ID] == true {
+					resp = purchases.RemovePurchase(update)
+				} else if _, ok := purchases.MakePurchaseQueue[update.Message.From.ID]; ok {
+					resp = purchases.MakePurchase(update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)

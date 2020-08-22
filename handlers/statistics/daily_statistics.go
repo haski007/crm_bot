@@ -1,16 +1,17 @@
-package main
+package statistics
 
 import (
 	"fmt"
 	"time"
 
-	"./betypes"
-	"./database"
+	"../../betypes"
+	"../../database"
+	"../../utils"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-func initEveryDayStatistics(bot *tgbotapi.BotAPI) {
+func InitEveryDayStatistics(bot *tgbotapi.BotAPI) {
 	t := time.Now()
 	n := time.Date(t.Year(), t.Month(), t.Day(), 23, 0, 0, 0, t.Location())
 	d := n.Sub(t)
@@ -23,7 +24,7 @@ func initEveryDayStatistics(bot *tgbotapi.BotAPI) {
 	for {
 		time.Sleep(d)
 		d = (24 * time.Hour)
-		sendInfoToAdmins(bot, getDailyStatistics())
+		utils.SendInfoToAdmins(bot, getDailyStatistics())
 	}
 
 }
@@ -32,7 +33,7 @@ func getDailyStatistics() string {
 
 	var products []betypes.Product
 
-	fromDate := getTodayStartTime()
+	fromDate := utils.GetTodayStartTime()
 
 	database.ProductsCollection.Find(nil).All(&products)
 
@@ -54,16 +55,4 @@ func getDailyStatistics() string {
 	message += fmt.Sprintf("Total: %.2f\n", totalSum)
 
 	return message
-}
-
-func sendInfoToAdmins(bot *tgbotapi.BotAPI, message string) {
-	var admins []betypes.User
-
-	err := database.UsersCollection.Find(m{"status": "admin"}).All(&admins)
-	if err != nil {
-		bot.Send(tgbotapi.NewMessage(370649141, "ALARM: Something went wrong!!!!"))
-	}
-	for _, user := range admins {
-		bot.Send(tgbotapi.NewMessage(int64(user.UserID), message))
-	}
 }

@@ -17,3 +17,13 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Statistics "+emoji.GraphicIncrease, "stats"),
 	),
 )
+
+
+// Create keyboard for configs.
+var SettingsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
+		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
+	),
+	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
+)

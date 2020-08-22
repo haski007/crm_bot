@@ -1,36 +1,23 @@
-package main
+package settings
 
 import (
 	"encoding/json"
 	"strconv"
 	"strings"
 
-	"./betypes"
-	"./database"
-	"./keyboards"
-	"./emoji"
+	"../../betypes"
+	"../../database"
+	"../../keyboards"
+	"../../emoji"
 
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// Create keyboard for configs.
-var configsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
-		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
-	),
-	tgbotapi.NewInlineKeyboardRow(keyboards.MainMenuButton),
-)
+type m bson.M
 
-// ConfigsHandler handle "Configuration" callback (button)
-func ConfigsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
-	resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		emoji.Gear+" Configurations "+emoji.Gear)
-
-	resp.ReplyMarkup = configsKeyboard
-	return resp
-}
+// Queue of users who are trying to add new product
+var AddProductQueue = make(map[int]*betypes.Product)
 
 // GetAllProductsHandler prints all produtcs from "products" collection.
 func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
@@ -53,8 +40,9 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 		msg.ReplyMarkup = prodKeyboard
 		bot.Send(msg)
 	}
-
-	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Here you come!")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Here you come!")
+	answer.ReplyMarkup = keyboards.MainMenu
+	return answer
 }
 
 // RemoveProductHandler removes product from "products" collection
@@ -71,16 +59,16 @@ func RemoveProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 // AddProductHandler adds product to database collection "products"
 func AddProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
-	addProductQueue[update.CallbackQuery.From.ID] = new(betypes.Product)
+	AddProductQueue[update.CallbackQuery.From.ID] = new(betypes.Product)
 
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:")
 }
 
 // addProduct prompt user to get name, type and prise of product. Save it in DB
-func addProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
+func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 	userID := update.Message.From.ID
 
-	prod := addProductQueue[update.Message.From.ID]
+	prod := AddProductQueue[update.Message.From.ID]
 
 	var err error
 	if prod.Name == "" {
@@ -104,7 +92,7 @@ func addProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 			answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has been added succesfully!")
 		}
 
-		delete(addProductQueue, userID)
+		delete(AddProductQueue, userID)
 		answer.ReplyMarkup = keyboards.MainMenu
 		return answer
 	}

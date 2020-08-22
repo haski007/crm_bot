@@ -1,18 +1,27 @@
-package main
+package purchases
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"time"
 
-	"./betypes"
-	"./database"
-	"./emoji"
-	"./keyboards"
+	"../../betypes"
+	"../../database"
+	"../../emoji"
+	"../../keyboards"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
+
+var (
+	MakePurchaseQueue = make(map[int]bson.ObjectId)
+	RemovePurchaseQueue = make(map[int]bool)
+)
+
+
+type m bson.M
 
 func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
 
@@ -70,12 +79,12 @@ func MakePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
 
-	makePurchaseQueue[update.CallbackQuery.From.ID] = productID
+	MakePurchaseQueue[update.CallbackQuery.From.ID] = productID
 
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:")
 }
 
-func makePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
+func MakePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 	var purchase betypes.Purchase
 
 	var err error
@@ -87,18 +96,18 @@ func makePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 	purchase.SaleDate = time.Now()
 	purchase.ID = bson.NewObjectId()
-	purchase.Seller = update.Message.From.UserName
+	purchase.Seller = fmt.Sprintf("%s (@%s)", update.Message.From.FirstName, update.Message.From.UserName)
 
 
 	// ---> Build query
-	who := m{"_id": makePurchaseQueue[update.Message.From.ID]}
+	who := m{"_id": MakePurchaseQueue[update.Message.From.ID]}
 	pushToArray := m{"$push": m{"purchases": purchase}}
 	err = database.ProductsCollection.Update(who, pushToArray)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 	}
 
-	delete(makePurchaseQueue, update.Message.From.ID)
+	delete(MakePurchaseQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been added succesfully")
 	answer.ReplyMarkup = keyboards.MainMenu
 	return answer
@@ -106,13 +115,13 @@ func makePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 }
 
 func RemovePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
-	removePurchaseQueue[update.CallbackQuery.From.ID] = true
+	RemovePurchaseQueue[update.CallbackQuery.From.ID] = true
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me id of purchase you want to remove:")
 
 	return answer
 }
 
-func removePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
+func RemovePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 	purchaseID := bson.ObjectIdHex(update.Message.Text)
 
 	who := m{
@@ -136,7 +145,7 @@ func removePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
 	}
 
-	delete(removePurchaseQueue, update.Message.From.ID)
+	delete(RemovePurchaseQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "An purchase has been succesfully removed!")
 	answer.ReplyMarkup = keyboards.MainMenu
 
