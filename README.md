@@ -10,7 +10,7 @@
 ## History:
 * All purchases that were made for today
 * The ability to delete any purchase
-## Storage
+## Storage:
 * The ability to track quantity of all of your products at stock at this moment
 * Bot Warns you if quantity of product is less than 10
 ## Future features:
