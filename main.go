@@ -82,6 +82,10 @@ func main() {
 				resp = purchases.RemovePurchaseHandler(update)
 			case "store":
 				store.StoreHandler(bot, update)
+			case "supply":
+				store.GetProductTypesHandler(bot, update)
+			case "check_storage":
+				store.ShowStorageHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -92,6 +96,10 @@ func main() {
 				purchases.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
 				resp = purchases.MakePurchaseHandler(bot, update)
+			} else if strings.Contains(update.CallbackQuery.Data, "suptype") {
+				store.GetProductsByTypeHandler(bot, update)
+			} else if strings.Contains(update.CallbackQuery.Data, "supname") {
+				resp = store.ReceiveSuppliesHandler(bot, update)
 			}
 
 			if resp.Text != "" {
@@ -131,6 +139,8 @@ func main() {
 					resp = purchases.RemovePurchase(update)
 				} else if _, ok := purchases.MakePurchaseQueue[update.Message.From.ID]; ok {
 					resp = purchases.MakePurchase(update)
+				} else if _, ok := store.SupplyQueue[update.Message.From.ID]; ok {
+					resp = store.MakeSupply(update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)

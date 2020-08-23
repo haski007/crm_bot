@@ -81,7 +81,14 @@ func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product type:")
 	} else if prod.Type == "" {
 		prod.Type = update.Message.Text
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product price:")
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter prime cost price:")
+	} else if prod.PrimeCost == 0.0 {
+		prod.PrimeCost, err = strconv.ParseFloat(update.Message.Text, 64)
+		if err != nil {
+			return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
+		}
+		
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter selling price price:")
 	} else {
 		prod.Price, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {

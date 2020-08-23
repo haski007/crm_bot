@@ -49,9 +49,10 @@ var HistoryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-// var StoreKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-// 	tgbotapi.NewInlineKeyboardRow(
-// 		,
-// 	),
-// 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
-// )
+var StoreKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("New supply " + emoji.Registered, "supply"),
+		tgbotapi.NewInlineKeyboardButtonData("Check storage " + emoji.QuestionMark, "check_storage"),
+	),
+	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
+)

@@ -20,6 +20,10 @@ const (
 	Recycling       = "\U0000267B"
 	Package = "\U0001F4E6"
 	Wrench = 	"\U0001F527"
+	Van = "\U0001F69A"
+	Check = "\U00002705"
+	Registered = "\U000000AE"
+	QuestionMark = "\U00002049"
 
 
 	PurchasesDelimiter = Clover + Clover +
