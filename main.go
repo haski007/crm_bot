@@ -53,6 +53,11 @@ func main() {
 
 		// ---> Handle keyboard signals.
 		if update.CallbackQuery != nil {
+			err := logger.MessageLog(update.CallbackQuery.From, update.CallbackQuery.Data)
+			if err != nil {
+				errors.Println(err)
+			}
+
 			// ---> Validate user
 			if !users.IsUser(update.CallbackQuery.From) {
 				resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "*FORBIDDEN!* you are not registered!\n"+
@@ -111,8 +116,7 @@ func main() {
 
 		// ---> Handle messages
 		if update.Message != nil {
-
-			err := logger.MessageLog(update)
+			err := logger.MessageLog(update.Message.From, update.Message.Text)
 			if err != nil {
 				errors.Println(err)
 			}

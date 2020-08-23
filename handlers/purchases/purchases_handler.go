@@ -127,10 +127,25 @@ func MakePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
 		return answer
+	} else if prod.InStorage < 0 {
+		prod.InStorage = 0
+		updateQuery := m{
+			"$set":m{
+				"in_storage": 0,
+			},
+		}
+		err := database.ProductsCollection.Update(who, updateQuery)
+		if err != nil {
+			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
+			answer.ReplyMarkup = keyboards.MainMenu
+			return answer
+		}
+		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
+			emoji.Warning, prod.InStorage, prod.Name)
 	} else if prod.InStorage < 10.0 {
 		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
-	}
+	} 
 	message += "Purchase has been added succesfully " + emoji.Check
 
 	delete(MakePurchaseQueue, update.Message.From.ID)

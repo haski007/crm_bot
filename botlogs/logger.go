@@ -29,7 +29,7 @@ func NewLogger(dirPath string) *Logger {
 }
 
 // MessageLog build log to file with name logger.dirPath + [date] + .log
-func (l *Logger) MessageLog(update tgbotapi.Update) error {
+func (l *Logger) MessageLog(from *tgbotapi.User, text string) error {
 
 	// ---> Open or create file
 	date := time.Now().Format("02-01-2006")
@@ -40,21 +40,20 @@ func (l *Logger) MessageLog(update tgbotapi.Update) error {
 	}
 	defer f.Close()
 
-
 	log := fmt.Sprintf(
 `--------------------
 ...Message...
 From: %v [%v]
-Chat id: %v
+User id: %v
 Time: %v
 Text: "%v"
 Language: %v
 `,
-		update.Message.From.FirstName + update.Message.From.LastName, "@" + update.Message.From.UserName,
-		update.Message.Chat.ID,
-		update.Message.Time().Format("15:04:05"),
-		update.Message.Text,
-		update.Message.From.LanguageCode)
+		from.FirstName + from.LastName, "@" + from.UserName,
+		from.ID,
+		time.Now().Format("15:04:05"),
+		text,
+		from.LanguageCode)
 
 	
 	_, err = f.WriteString(log)
