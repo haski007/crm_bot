@@ -32,8 +32,11 @@ var SettingsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var StatsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Get today's history"+emoji.UpLeftArrow, "curr_day_history"),
-		tgbotapi.NewInlineKeyboardButtonData("Get today's stats"+emoji.GraphicIncrease, "curr_day_stats"),
+		tgbotapi.NewInlineKeyboardButtonData("Month stats "+emoji.UpLeftArrow, "month_stats"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Today's history"+emoji.UpLeftArrow, "curr_day_history"),
+		tgbotapi.NewInlineKeyboardButtonData("Today's stats"+emoji.GraphicIncrease, "curr_day_stats"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,

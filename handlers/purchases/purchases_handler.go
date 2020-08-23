@@ -30,7 +30,7 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	database.ProductsCollection.Find(bson.M{}).Distinct("type", &types)
 
 	countRows := len(types) / 3
-	if countRows == 0 {
+	if countRows % 3 != 0 || countRows == 0{
 		countRows++
 	}
 	rows := make([][]tgbotapi.InlineKeyboardButton, countRows)

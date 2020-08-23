@@ -78,6 +78,8 @@ func main() {
 				statistics.GetCurrentDayHistoryHandler(bot, update)
 			case "curr_day_stats":
 				statistics.GetCurrentDayStatsHandler(bot, update)
+			case "month_stats":
+				statistics.MonthStatisticsHandler(bot, update)
 			case "remove_purchase":
 				resp = purchases.RemovePurchaseHandler(update)
 			case "store":
@@ -135,6 +137,8 @@ func main() {
 			} else {
 				if _, ok := settings.AddProductQueue[update.Message.From.ID]; ok {
 					resp = settings.AddProduct(update)
+				} else if statistics.MonthStatsQueue[update.Message.From.ID] == true  {
+					resp = statistics.GetMonthStatistics(update)
 				} else if purchases.RemovePurchaseQueue[update.Message.From.ID] == true {
 					resp = purchases.RemovePurchase(update)
 				} else if _, ok := purchases.MakePurchaseQueue[update.Message.From.ID]; ok {

@@ -86,8 +86,8 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			if purchases[j - 1].saleDate.After(purchases[j].saleDate) {
 				purchases[j - 1], purchases[j] = purchases[j], purchases[j - 1]
 			}
-			}		
-		}
+		}		
+	}
 		
 	// ---> Build list of sorted purchases
 	var index int = 1

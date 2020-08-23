@@ -40,7 +40,7 @@ func getDailyStatistics() string {
 	var totalSum float64
 	var totalMoney float64
 
-	var message string = "   "
+	var message string = "  "
 
 	for index, prod := range products {
 		amount := 0.0
