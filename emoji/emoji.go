@@ -17,7 +17,10 @@ const (
 	Basket          = "\U0001F5D1"
 	GraphicIncrease = "\U0001F4C8"
 	Clover          = "\U0001F340"
-	Recucling       = "\U0000267B"
+	Recycling       = "\U0000267B"
+	Package = "\U0001F4E6"
+	Wrench = 	"\U0001F527"
+
 
 	PurchasesDelimiter = Clover + Clover +
 		Clover + Clover +

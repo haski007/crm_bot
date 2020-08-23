@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"fmt"
+	"time"
 
 	"../../betypes"
 	"../../database"
@@ -16,24 +17,29 @@ import (
 
 type m bson.M
 
-func GetStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Purchases history")
-
-	var historyKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Get today's history"+emoji.UpLeftArrow, "curr_day_history"),
-			tgbotapi.NewInlineKeyboardButtonData("Get today's stats"+emoji.GraphicIncrease, "curr_day_stats"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			keyboards.MainMenuButton,
-		),
-	)
-	answer.ReplyMarkup = historyKeyboard
-
-	return answer
+type purchase struct {
+	prodName string
+	prodType string
+	amount float64
+	cash float64
+	seller string
+	saleDate time.Time
+	ID string
 }
 
-func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
+func GetStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+
+	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+	update.CallbackQuery.Message.MessageID,
+	emoji.GraphicIncrease + " *STATISTICS* " + emoji.GraphicIncrease,
+	keyboards.StatsKeyboard)
+
+	answer.ParseMode = "MarkDown"
+
+	bot.Send(answer)
+}
+
+func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var products []betypes.Product
 	fromDate := utils.GetTodayStartTime()
 
@@ -49,55 +55,77 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) t
 
 	err := database.ProductsCollection.Find(query).All(&products)
 	if err != nil {
-		return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "ERROR: "+err.Error())
+		bot.Send(tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			emoji.Warning + emoji.Warning + emoji.Warning + "ERROR: "+err.Error(),
+			keyboards.MainMenu))
 	}
 
 	var message string
 
-	var id int
+	var purchases []purchase
 	for _, prod := range products {
 		i := len(prod.Purchases) - 1
 		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {
-			message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %.2f\nCash: %.2f\nSeller: %s\nSale Date: %v\n%s\n",
-				emoji.PurchasesDelimiter, id, prod.Name, prod.Type, prod.Purchases[i].Amount,
+			purchases = append(purchases, purchase{
+				prod.Name, prod.Type, prod.Purchases[i].Amount,
 				prod.Purchases[i].Amount*prod.Price,
 				prod.Purchases[i].Seller,
-				prod.Purchases[i].SaleDate.In(utils.Location).Format("02.01.2006 15:04:05"),
-				prod.Purchases[i].ID.String())
-			id++
+				prod.Purchases[i].SaleDate.In(utils.Location),
+				prod.Purchases[i].ID.String(),
+			})
 			i--
 		}
 	}
-	var answer tgbotapi.MessageConfig
-	if message != "" {
-		answer = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, message)
-		answer.ParseMode = "MarkDown"
-	} else {
-		answer = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "There aren't purchases today yet!")
+
+	// ---> Sort purchases by date.
+	for i := len(purchases); i > 0; i-- {
+		for j := 1; j < i; j++ {
+			if purchases[j - 1].saleDate.After(purchases[j].saleDate) {
+				purchases[j - 1], purchases[j] = purchases[j], purchases[j - 1]
+			}
+			}		
+		}
+		
+	// ---> Build list of sorted purchases
+	var index int = 1
+	for _, pur := range purchases {
+		message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %v\nCash: %.2f\nSeller: %s\nSale Date: %v\n%s\n",
+		emoji.PurchasesDelimiter, index, pur.prodName, pur.prodType, pur.amount,
+		pur.cash,
+		pur.seller,
+		pur.saleDate.Format("02.01.2006 15:04:05"),
+		pur.ID)
+		index++
 	}
 
-	var historyKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Remove purchase "+emoji.Basket, "remove_purchase"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
-				emoji.HouseWithGarden+"..."+emoji.Car+"....", "home"),
-		),
-	)
-	answer.ReplyMarkup = historyKeyboard
-	return answer
+	var answer tgbotapi.EditMessageTextConfig
+	if message != "" {
+		answer = tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			message, keyboards.HistoryKeyboard)
+		answer.ParseMode = "MarkDown"
+	} else {
+		answer = tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			emoji.Warning + " There aren't purchases today yet! " + emoji.Warning,
+			keyboards.MainMenu)
+	}
+
+	bot.Send(answer)
 }
 
-func GetCurrentDayStatsHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func GetCurrentDayStatsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.CallbackQuery.From) {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You have not enough permissions!")
-		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			"You have not enough permissions!" + emoji.Warning, keyboards.MainMenu)
+		bot.Send(answer)
 	}
 	message := getDailyStatistics()
 
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, message)
-	answer.ReplyMarkup = keyboards.MainMenu
-	return answer
+	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID,
+		message, keyboards.MainMenu)
+	bot.Send(answer)
 }

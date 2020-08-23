@@ -14,6 +14,7 @@ import (
 	"./handlers/statistics"
 	"./handlers/purchases"
 	"./handlers/users"
+	"./handlers/store"
 	"github.com/Haski007/go-errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -40,8 +41,6 @@ func main() {
 
 	logger := botlogs.NewLogger("")
 
-	var resp tgbotapi.MessageConfig
-
 	defer func() {
 
 		if er := recover(); er != nil {
@@ -50,6 +49,8 @@ func main() {
 	}()
 
 	for update := range updates {
+		var resp tgbotapi.MessageConfig
+
 		// ---> Handle keyboard signals.
 		if update.CallbackQuery != nil {
 			// ---> Validate user
@@ -62,23 +63,25 @@ func main() {
 			}
 			switch update.CallbackQuery.Data {
 			case "home":
-				resp = handlers.MainMenuHandler(update)
+				handlers.MainMenuHandler(bot, update)
 			case "configs":
-				resp = settings.SettingsHandler(update)
+				settings.SettingsHandler(bot, update)
 			case "add_product":
 				resp = settings.AddProductHandler(update)
 			case "get_all_products":
 				resp = settings.GetAllProductsHandler(bot, update)
 			case "purchase":
-				resp = purchases.GetProductTypesHandler(bot, update)
+				purchases.GetProductTypesHandler(bot, update)
 			case "stats":
-				resp = statistics.GetStatisticsHandler(bot, update)
+				statistics.GetStatisticsHandler(bot, update)
 			case "curr_day_history":
-				resp = statistics.GetCurrentDayHistoryHandler(bot, update)
+				statistics.GetCurrentDayHistoryHandler(bot, update)
 			case "curr_day_stats":
-				resp = statistics.GetCurrentDayStatsHandler(update)
+				statistics.GetCurrentDayStatsHandler(bot, update)
 			case "remove_purchase":
 				resp = purchases.RemovePurchaseHandler(update)
+			case "store":
+				store.StoreHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -86,12 +89,14 @@ func main() {
 				resp = settings.RemoveProductHandler(update)
 				resp.ReplyMarkup = keyboards.MainMenu
 			} else if strings.Contains(update.CallbackQuery.Data, "purtyp") {
-				resp = purchases.GetProductsByTypeHandler(bot, update)
+				purchases.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
-				resp = purchases.MakePurchaseHandler(update)
+				resp = purchases.MakePurchaseHandler(bot, update)
 			}
 
-			bot.Send(resp)
+			if resp.Text != "" {
+				bot.Send(resp)
+			}
 		}
 
 		// ---> Handle messages

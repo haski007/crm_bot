@@ -19,6 +19,8 @@ type m bson.M
 // Queue of users who are trying to add new product
 var AddProductQueue = make(map[int]*betypes.Product)
 
+var messagesToDelete = make(map[int64]int)
+
 // GetAllProductsHandler prints all produtcs from "products" collection.
 func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
 
@@ -34,12 +36,15 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 		msg.ParseMode = "Markdown"
 		prodKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Remove"+emoji.Minus, "remove_product "+prod.ID.Hex()),
+				tgbotapi.NewInlineKeyboardButtonData("Remove "+emoji.Minus, "remove_product "+prod.ID.Hex()),
 			),
 		)
 		msg.ReplyMarkup = prodKeyboard
 		bot.Send(msg)
 	}
+
+	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID))
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Here you come!")
 	answer.ReplyMarkup = keyboards.MainMenu
 	return answer

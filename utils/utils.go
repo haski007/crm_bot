@@ -34,3 +34,11 @@ func GetTodayStartTime() time.Time {
 	return time.Date(year, month, day, 0, 0, 4, 0, t.Location())
 }
 
+func MakeEmojiRow(emoji string, len int) string {
+	var row string
+
+	for i := 0; i < len; i++ {
+		row += emoji
+	}
+	return row
+}

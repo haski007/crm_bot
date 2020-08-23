@@ -23,7 +23,7 @@ var (
 
 type m bson.M
 
-func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
+func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	var types []string
 
@@ -46,13 +46,13 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 
 	typeChoiceKeyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
 
-	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Choose type of product...")
-	msg.ReplyMarkup = typeChoiceKeyboard
-
-	return msg
+	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID,
+		"Choose type of product...", typeChoiceKeyboard)
+	bot.Send(answer)
 }
 
-func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
+func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	t := strings.Join(strings.Split(update.CallbackQuery.Data, " ")[1:], " ")
 	var prods []betypes.Product
 
@@ -68,19 +68,22 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbo
 	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
 
 	var productsKeyboard = tgbotapi.NewInlineKeyboardMarkup(rows...)
-	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Choose product...")
-	msg.ReplyMarkup = productsKeyboard
-
-	return msg
+	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID,
+		"Choose product...",
+		productsKeyboard)
+	bot.Send(answer)
 }
 
-func MakePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
 
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
-
+	
 	MakePurchaseQueue[update.CallbackQuery.From.ID] = productID
-
+	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID))
+	
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:")
 }
 

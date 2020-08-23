@@ -5,8 +5,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("........."+emoji.House+"......."+emoji.Tree+
-	"..Main Menu........"+emoji.HouseWithGarden+"..."+emoji.Car+"....", "home")
+var MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("Main Menu "+emoji.House, "home")
 
 var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
@@ -15,6 +14,9 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
 		tgbotapi.NewInlineKeyboardButtonData("Statistics "+emoji.GraphicIncrease, "stats"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Store "+emoji.Package, "store"),
 	),
 )
 
@@ -27,3 +29,29 @@ var SettingsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
 )
+
+var StatsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Get today's history"+emoji.UpLeftArrow, "curr_day_history"),
+		tgbotapi.NewInlineKeyboardButtonData("Get today's stats"+emoji.GraphicIncrease, "curr_day_stats"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		MainMenuButton,
+	),
+)
+
+var HistoryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Remove purchase "+emoji.Basket, "remove_purchase"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		MainMenuButton,
+	),
+)
+
+// var StoreKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+// 	tgbotapi.NewInlineKeyboardRow(
+// 		,
+// 	),
+// 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
+// )

@@ -88,7 +88,7 @@ func CommandRemoveUserHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 		}
 	}
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
-		strconv.Itoa(len(args))+" users has been removed!"+emoji.Recucling+"\n")
+		strconv.Itoa(len(args))+" users has been removed!"+emoji.Recycling+"\n")
 	answer.ReplyMarkup = keyboards.MainMenu
 	return answer
 }
