@@ -38,6 +38,7 @@ func getDailyStatistics() string {
 	database.ProductsCollection.Find(nil).All(&products)
 
 	var totalSum float64
+	var totalMoney float64
 
 	var message string = "   "
 
@@ -47,12 +48,13 @@ func getDailyStatistics() string {
 		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {
 			amount += prod.Purchases[i].Amount
 			totalSum += prod.Purchases[i].Amount * prod.Price
+			totalMoney += prod.Purchases[i].Amount * prod.PrimeCost
 			i--
 		}
 		message += fmt.Sprintf("%-3d) %-30s %-5s (%.2f)\n", index, prod.Name, "sold", amount)
 	}
 
-	message += fmt.Sprintf("Total: %.2f\n", totalSum)
+	message += fmt.Sprintf("Total cash: %v\nTotal profit: %v", totalSum, totalSum - totalMoney)
 
 	return message
 }

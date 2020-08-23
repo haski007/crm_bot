@@ -22,6 +22,7 @@ type purchase struct {
 	prodType string
 	amount float64
 	cash float64
+	profit float64
 	seller string
 	saleDate time.Time
 	ID string
@@ -70,6 +71,7 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			purchases = append(purchases, purchase{
 				prod.Name, prod.Type, prod.Purchases[i].Amount,
 				prod.Purchases[i].Amount*prod.Price,
+				prod.Purchases[i].Amount*prod.Price - prod.Purchases[i].Amount*prod.PrimeCost,
 				prod.Purchases[i].Seller,
 				prod.Purchases[i].SaleDate.In(utils.Location),
 				prod.Purchases[i].ID.String(),
@@ -90,9 +92,10 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	// ---> Build list of sorted purchases
 	var index int = 1
 	for _, pur := range purchases {
-		message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %v\nCash: %.2f\nSeller: %s\nSale Date: %v\n%s\n",
+		message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %v\nCash: %v\nProfit: %v\nSeller: %s\nSale Date: %v\n%s\n",
 		emoji.PurchasesDelimiter, index, pur.prodName, pur.prodType, pur.amount,
 		pur.cash,
+		pur.profit,
 		pur.seller,
 		pur.saleDate.Format("02.01.2006 15:04:05"),
 		pur.ID)
