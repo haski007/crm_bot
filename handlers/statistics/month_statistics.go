@@ -58,8 +58,8 @@ func GetMonthStatistics(update tgbotapi.Update) tgbotapi.MessageConfig {
 		message += fmt.Sprintf("%-3d) %s  %-5s(*%v*) profit(*%v UAH*)\n", index, prod.Name, "sold", amount, profit)
 	}
 
-	message += fmt.Sprintf("Total cash: *%v UAH*\nTotal profit: *%v UAH*", totalSum, totalSum - totalMoney)
-
+	message += fmt.Sprintf("Total cash: *%v UAH*\nTotal profit: *%.2f UAH*", totalSum, totalSum - totalMoney)
+	delete(MonthStatsQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
 	answer.ParseMode = "MarkDown"
 	answer.ReplyMarkup = keyboards.MainMenu

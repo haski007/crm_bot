@@ -2,6 +2,9 @@ package keyboards
 
 import (
 	"../emoji"
+	"../database"
+
+	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -25,6 +28,12 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 var SettingsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Show all product types "+emoji.Info, "get_all_types"),
+		tgbotapi.NewInlineKeyboardButtonData("Add new type "+emoji.NewButton, "add_type"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
 	),
 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
@@ -59,3 +68,35 @@ var StoreKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
 )
+
+var TypesListKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Remove type "+emoji.Basket, "remove_type"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		MainMenuButton,
+	),
+)
+
+
+func GetTypesKeyboard(data string) tgbotapi.InlineKeyboardMarkup {
+
+	var types []string
+
+	database.ProductTypesCollection.Find(bson.M{}).Distinct("type", &types)
+
+	countRows := len(types) / 3
+	if countRows % 3 != 0 || countRows == 0{
+		countRows++
+	}
+	rows := make([][]tgbotapi.InlineKeyboardButton, countRows)
+	var x int
+	for i, t := range types {
+		if i%3 == 0 && i != 0 {
+			x++
+		}
+		rows[x] = append(rows[x], tgbotapi.NewInlineKeyboardButtonData(t, data + " " + t))
+	}
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
+	return keyboard
+}

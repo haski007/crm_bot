@@ -14,26 +14,9 @@ import (
 
 func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
-	var types []string
-
-	database.ProductsCollection.Find(bson.M{}).Distinct("type", &types)
-
-	countRows := len(types) / 3
-	if countRows % 3 != 0 || countRows == 0{
-		countRows++
-	}
-	rows := make([][]tgbotapi.InlineKeyboardButton, countRows)
-	var x int
-	for i, t := range types {
-		if i%3 == 0 && i != 0 {
-			x++
-		}
-		rows[x] = append(rows[x], tgbotapi.NewInlineKeyboardButtonData(t, "suptype "+t))
-	}
-
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
-
-	typeChoiceKeyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
+	typeChoiceKeyboard := keyboards.GetTypesKeyboard("suptyp")
+	typeChoiceKeyboard.InlineKeyboard = append(typeChoiceKeyboard.InlineKeyboard,
+		[]tgbotapi.InlineKeyboardButton{keyboards.MainMenuButton})
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,

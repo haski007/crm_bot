@@ -72,7 +72,7 @@ func main() {
 			case "configs":
 				settings.SettingsHandler(bot, update)
 			case "add_product":
-				resp = settings.AddProductHandler(update)
+				settings.AddProductHandler(bot, update)
 			case "get_all_products":
 				resp = settings.GetAllProductsHandler(bot, update)
 			case "purchase":
@@ -93,6 +93,12 @@ func main() {
 				store.GetProductTypesHandler(bot, update)
 			case "check_storage":
 				store.ShowStorageHandler(bot, update)
+			case "add_type":
+				settings.AddNewTypeHandler(bot, update)
+			case "get_all_types":
+				settings.ShowAllProductsHandler(bot, update)
+			case "remove_type":
+				settings.RemoveTypeHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -103,10 +109,13 @@ func main() {
 				purchases.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
 				resp = purchases.MakePurchaseHandler(bot, update)
-			} else if strings.Contains(update.CallbackQuery.Data, "suptype") {
+			} else if strings.Contains(update.CallbackQuery.Data, "suptyp") {
 				store.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "supname") {
 				resp = store.ReceiveSuppliesHandler(bot, update)
+			} else if _, ok := settings.AddProductQueue[update.CallbackQuery.From.ID];
+						ok && strings.Contains(update.CallbackQuery.Data, "protyp") {
+				settings.AddTypeToProduct(bot, update)
 			}
 
 			if resp.Text != "" {
@@ -146,15 +155,21 @@ func main() {
 				} else if purchases.RemovePurchaseQueue[update.Message.From.ID] == true {
 					resp = purchases.RemovePurchase(update)
 				} else if _, ok := purchases.MakePurchaseQueue[update.Message.From.ID]; ok {
-					resp = purchases.MakePurchase(update)
+					resp = purchases.MakePurchase(bot, update)
 				} else if _, ok := store.SupplyQueue[update.Message.From.ID]; ok {
 					resp = store.MakeSupply(update)
+				} else if settings.AddTypeQueue[update.Message.From.ID] == true{
+					settings.AddNewType(bot, update)
+				} else if settings.RemoveTypeQueue[update.Message.From.ID] == true {
+					settings.RemoveType(bot, update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)
 				}
 			}
-			bot.Send(resp)
+			if resp.Text != "" {
+				bot.Send(resp)
+			}
 		}
 	}
 }

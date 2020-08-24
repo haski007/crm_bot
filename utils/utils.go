@@ -21,8 +21,11 @@ func SendInfoToAdmins(bot *tgbotapi.BotAPI, message string) {
 	if err != nil {
 		bot.Send(tgbotapi.NewMessage(370649141, "ALARM: Something went wrong!!!!"))
 	}
+
 	for _, user := range admins {
-		bot.Send(tgbotapi.NewMessage(int64(user.UserID), message))
+		answer := tgbotapi.NewMessage(int64(user.UserID), message)
+		answer.ParseMode = "MarkDown"
+		bot.Send(answer)
 	}
 }
 

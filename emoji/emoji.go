@@ -24,6 +24,8 @@ const (
 	Check = "\U00002705"
 	Registered = "\U000000AE"
 	QuestionMark = "\U00002049"
+	NewButton = "\U0001F195"
+	Info = "\U00002139"
 
 
 	PurchasesDelimiter = Clover + Clover +

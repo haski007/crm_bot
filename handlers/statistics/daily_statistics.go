@@ -11,6 +11,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+
 func InitEveryDayStatistics(bot *tgbotapi.BotAPI) {
 	t := time.Now()
 	n := time.Date(t.Year(), t.Month(), t.Day(), 23, 0, 0, 0, t.Location())
@@ -51,10 +52,10 @@ func getDailyStatistics() string {
 			totalMoney += prod.Purchases[i].Amount * prod.PrimeCost
 			i--
 		}
-		message += fmt.Sprintf("%-3d) %-30s %-5s (%.2f)\n", index, prod.Name, "sold", amount)
+		message += fmt.Sprintf("%02d) *%s*   %-6s %.2f *(%.2f UAH)*\n", index + 1, prod.Name, "sold:", amount, amount * prod.Price)
 	}
 
-	message += fmt.Sprintf("Total cash: %v\nTotal profit: %v", totalSum, totalSum - totalMoney)
+	message += fmt.Sprintf("Total cash: %v\nTotal profit: %.2f", totalSum, totalSum - totalMoney)
 
 	return message
 }

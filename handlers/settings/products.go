@@ -63,10 +63,12 @@ func RemoveProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 }
 
 // AddProductHandler adds product to database collection "products"
-func AddProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func AddProductHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	AddProductQueue[update.CallbackQuery.From.ID] = new(betypes.Product)
 
-	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:")
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:"))
+	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID))
 }
 
 // addProduct prompt user to get name, type and prise of product. Save it in DB
@@ -78,17 +80,21 @@ func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 	var err error
 	if prod.Name == "" {
 		prod.Name = update.Message.Text
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter product type:")
-	} else if prod.Type == "" {
-		prod.Type = update.Message.Text
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Enter *prime cost* price:")
-		answer.ParseMode = "MarkDown"
+
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Choose product type:")
+		
+		typesKeyboard := keyboards.GetTypesKeyboard("protyp")
+		typesKeyboard.InlineKeyboard = append(typesKeyboard.InlineKeyboard,
+			[]tgbotapi.InlineKeyboardButton{keyboards.MainMenuButton})
+		answer.ReplyMarkup = typesKeyboard
+
 		return answer
 	} else if prod.PrimeCost == 0.0 {
 		prod.PrimeCost, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
 			return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
 		}
+
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Enter *selling price* price:")
 		answer.ParseMode = "MarkDown"
 		return answer
@@ -111,4 +117,16 @@ func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 		answer.ReplyMarkup = keyboards.MainMenu
 		return answer
 	}
+}
+
+func AddTypeToProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	t := strings.Join(strings.Fields(update.CallbackQuery.Data)[1:], " ")
+
+	AddProductQueue[update.CallbackQuery.From.ID].Type = t
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
+		"Enter prime cost")
+	bot.Send(answer)
+
+	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
+		update.CallbackQuery.Message.MessageID))
 }

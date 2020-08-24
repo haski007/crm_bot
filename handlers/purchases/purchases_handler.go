@@ -11,6 +11,7 @@ import (
 	"../../database"
 	"../../emoji"
 	"../../keyboards"
+	"../../utils"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -24,27 +25,9 @@ var (
 type m bson.M
 
 func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-
-	var types []string
-
-	database.ProductsCollection.Find(bson.M{}).Distinct("type", &types)
-
-	countRows := len(types) / 3
-	if countRows % 3 != 0 || countRows == 0{
-		countRows++
-	}
-	rows := make([][]tgbotapi.InlineKeyboardButton, countRows)
-	var x int
-	for i, t := range types {
-		if i%3 == 0 && i != 0 {
-			x++
-		}
-		rows[x] = append(rows[x], tgbotapi.NewInlineKeyboardButtonData(t, "purtyp "+t))
-	}
-
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
-
-	typeChoiceKeyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
+	typeChoiceKeyboard := keyboards.GetTypesKeyboard("purtyp")
+	typeChoiceKeyboard.InlineKeyboard = append(typeChoiceKeyboard.InlineKeyboard,
+		[]tgbotapi.InlineKeyboardButton{keyboards.MainMenuButton})
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
@@ -87,7 +70,7 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.
 	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:")
 }
 
-func MakePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
+func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageConfig {
 	var purchase betypes.Purchase
 
 	var err error
@@ -142,9 +125,12 @@ func MakePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 		}
 		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
+		
+		utils.SendInfoToAdmins(bot, message)
 	} else if prod.InStorage < 10.0 {
 		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
+		utils.SendInfoToAdmins(bot, message)
 	} 
 	message += "Purchase has been added succesfully " + emoji.Check
 
@@ -209,6 +195,7 @@ func RemovePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 	// ---> Remove wrong purchase from db
 	err := database.ProductsCollection.Update(who, query)
 	if err != nil {
+		delete(RemovePurchaseQueue, update.Message.From.ID)
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
 	}
 

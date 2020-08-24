@@ -130,5 +130,6 @@ func GetCurrentDayStatsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
 		message, keyboards.MainMenu)
+	answer.ParseMode = "MarkDown"
 	bot.Send(answer)
 }
