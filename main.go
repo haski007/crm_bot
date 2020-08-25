@@ -13,6 +13,7 @@ import (
 	"./handlers/settings"
 	"./handlers/statistics"
 	"./handlers/purchases"
+	"./handlers/cashbox"
 	"./handlers/users"
 	"./handlers/store"
 	"github.com/Haski007/go-errors"
@@ -99,6 +100,14 @@ func main() {
 				settings.ShowAllProductsHandler(bot, update)
 			case "remove_type":
 				settings.RemoveTypeHandler(bot, update)
+			case "cashbox":
+				cashbox.CashboxHandler(bot, update)
+			case "plus_cash":
+				cashbox.PlusCashHandler(bot, update)
+			case "minus_cash":
+				cashbox.MinusCashHandler(bot, update)
+			case "transactions":
+				cashbox.TransactionsHistoryHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -162,6 +171,12 @@ func main() {
 					settings.AddNewType(bot, update)
 				} else if settings.RemoveTypeQueue[update.Message.From.ID] == true {
 					settings.RemoveType(bot, update)
+				} else if _, ok := cashbox.PlusCashQueue[update.Message.From.ID]; ok {
+					cashbox.PlusCash(bot, update)
+				} else if _, ok := cashbox.MinusCashQueue[update.Message.From.ID]; ok {
+					cashbox.MinusCash(bot, update)
+				} else if cashbox.TransactionsHostiryQueue[update.Message.From.ID] == true {
+					cashbox.ShowTransactionsHistory(bot, update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)

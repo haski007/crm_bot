@@ -1,4 +1,4 @@
-# TELEGRAM BOT (Pre-Alpha v.0.12) -pocket crm for small business
+# TELEGRAM BOT (Pre-Alpha v.0.32) -pocket crm for small business
 
 ## There are two types of users:
 * users - hired workers. They can add to database new purchases and create new products.

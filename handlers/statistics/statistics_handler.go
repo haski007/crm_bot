@@ -93,7 +93,7 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var index int = 1
 	for _, pur := range purchases {
 		message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %v\nCash: %v\nProfit: %v\nSeller: %s\nSale Date: %v\n%s\n",
-		emoji.PurchasesDelimiter, index, pur.prodName, pur.prodType, pur.amount,
+		emoji.GreenDelimiter, index, pur.prodName, pur.prodType, pur.amount,
 		pur.cash,
 		pur.profit,
 		pur.seller,

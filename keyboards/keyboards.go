@@ -20,6 +20,7 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Store "+emoji.Package, "store"),
+		tgbotapi.NewInlineKeyboardButtonData("Cashbox "+emoji.MoneyFace, "cashbox"),
 	),
 )
 
@@ -28,13 +29,11 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 var SettingsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Show all product types "+emoji.Info, "get_all_types"),
-		tgbotapi.NewInlineKeyboardButtonData("Add new type "+emoji.NewButton, "add_type"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Add new type "+emoji.NewButton, "add_type"),
+		tgbotapi.NewInlineKeyboardButtonData("Show all product types "+emoji.Info, "get_all_types"),
 	),
 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
 )
@@ -72,6 +71,19 @@ var StoreKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 var TypesListKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Remove type "+emoji.Basket, "remove_type"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		MainMenuButton,
+	),
+)
+
+var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Add to Cashbox "+emoji.DollarBanknote, "plus_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("Get from Cashbox "+emoji.MoneyWithWings, "minus_cash"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,

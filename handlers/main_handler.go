@@ -6,6 +6,7 @@ import (
 	"./settings"
 	"./purchases"
 	"./statistics"
+	"./cashbox"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -28,4 +29,7 @@ func deleteAllQueues(id int) {
 	delete(statistics.MonthStatsQueue, id)
 	delete(purchases.MakePurchaseQueue, id)
 	delete(purchases.RemovePurchaseQueue, id)
+	delete(cashbox.PlusCashQueue, id)
+	delete(cashbox.MinusCashQueue, id)
+	delete(cashbox.TransactionsHostiryQueue, id)
 }

@@ -83,6 +83,14 @@ func RemoveTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 }
 
 func RemoveType(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	defer func(){
+		if err := recover(); err != nil {
+			message := fmt.Sprintf("ERROR %s: {%v}", emoji.Warning, err)
+			answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
+			answer.ReplyMarkup = keyboards.MainMenu
+			bot.Send(answer)
+		}
+	}()
 	typeID := bson.ObjectIdHex(update.Message.Text)
 
 	if err := database.ProductTypesCollection.RemoveId(typeID); err != nil {
