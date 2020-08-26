@@ -12,6 +12,7 @@ var (
 	UsersCollection    *mgo.Collection
 	ProductTypesCollection *mgo.Collection
 	CashboxCollection *mgo.Collection
+	DailyCashCollection *mgo.Collection
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 	UsersCollection = session.DB("crm_bot_db").C("users")
 	ProductTypesCollection = session.DB("crm_bot_db").C("prod_types")
 	CashboxCollection = session.DB("crm_bot_db").C("cashbox")
+	DailyCashCollection = session.DB("crm_bot_db").C("daily_cash")
 
 	if err = session.Ping(); err != nil {
 		log.Fatal(err)

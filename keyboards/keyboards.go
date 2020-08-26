@@ -86,6 +86,10 @@ var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Set start money " + emoji.FileBox, "set_start_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("Get start money " + emoji.Eye, "get_start_cash"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,
 	),
 )

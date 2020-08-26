@@ -20,3 +20,10 @@ type Transaction struct {
 	DataTime time.Time	`bson:"data_time"`
 	Comment string		`bson:"comment"`
 }
+
+type DailyCash struct {
+	ID bson.ObjectId `bson:"_id,omitempty"`
+	Money float64	`bson:"money"`
+	User string `bson:"user"`
+	Date  time.Time	`bson:"date"`
+}

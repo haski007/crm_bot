@@ -108,6 +108,10 @@ func main() {
 				cashbox.MinusCashHandler(bot, update)
 			case "transactions":
 				cashbox.TransactionsHistoryHandler(bot, update)
+			case "set_start_cash":
+				cashbox.SetStartDailyMoneyHandler(bot, update)
+			case "get_start_cash":
+				cashbox.GetStartDailyMoneyHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -153,6 +157,8 @@ func main() {
 					resp = handlers.CommandUsersHandler(update)
 				case "remove_user":
 					resp = handlers.CommandRemoveUserHandler(update)
+				case "remove_today_cash":
+					handlers.RemoveTodayCash(bot, update)
 				default:
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)
 				}
@@ -175,8 +181,12 @@ func main() {
 					cashbox.PlusCash(bot, update)
 				} else if _, ok := cashbox.MinusCashQueue[update.Message.From.ID]; ok {
 					cashbox.MinusCash(bot, update)
-				} else if cashbox.TransactionsHostiryQueue[update.Message.From.ID] == true {
+				} else if cashbox.TransactionsHostoryQueue[update.Message.From.ID] == true {
 					cashbox.ShowTransactionsHistory(bot, update)
+				} else if cashbox.SetStartDailyMoneyQueue[update.Message.From.ID] == true {
+					cashbox.SetStartDailyMoney(bot, update)
+				} else if cashbox.GetStartDailyMoneyQueue[update.Message.From.ID] == true {
+					cashbox.GetStartDailyMoney(bot, update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)

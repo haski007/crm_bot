@@ -31,5 +31,7 @@ func deleteAllQueues(id int) {
 	delete(purchases.RemovePurchaseQueue, id)
 	delete(cashbox.PlusCashQueue, id)
 	delete(cashbox.MinusCashQueue, id)
-	delete(cashbox.TransactionsHostiryQueue, id)
+	delete(cashbox.TransactionsHostoryQueue, id)
+	delete(cashbox.SetStartDailyMoneyQueue, id)
+	delete(cashbox.GetStartDailyMoneyQueue, id)
 }

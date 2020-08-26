@@ -18,20 +18,21 @@ const (
 	GraphicIncrease = "\U0001F4C8"
 	Clover          = "\U0001F340"
 	Recycling       = "\U0000267B"
-	Package = "\U0001F4E6"
-	Wrench = 	"\U0001F527"
-	Van = "\U0001F69A"
-	Check = "\U00002705"
-	Registered = "\U000000AE"
-	QuestionMark = "\U00002049"
-	NewButton = "\U0001F195"
-	Info = "\U00002139"
-	MoneyFace = "\U0001F911"
-	DollarBanknote = "\U0001F4B5"
-	MoneyWithWings = "\U0001F4B8"
-	Receipt = "\U0001F9FE"
-	RedTrianle = "\U0001F53B"
-
+	Package         = "\U0001F4E6"
+	Wrench          = "\U0001F527"
+	Van             = "\U0001F69A"
+	Check           = "\U00002705"
+	Registered      = "\U000000AE"
+	QuestionMark    = "\U00002049"
+	NewButton       = "\U0001F195"
+	Info            = "\U00002139"
+	MoneyFace       = "\U0001F911"
+	DollarBanknote  = "\U0001F4B5"
+	MoneyWithWings  = "\U0001F4B8"
+	Receipt         = "\U0001F9FE"
+	RedTrianle      = "\U0001F53B"
+	FileBox         = "\U0001F5C3"
+	Eye 			= "\U0001F441"
 
 	GreenDelimiter = Clover + Clover +
 		Clover + Clover +
@@ -50,10 +51,10 @@ const (
 		RedTrianle + RedTrianle + "\n"
 
 	DollarDelimiter = DollarBanknote + DollarBanknote +
-	DollarBanknote + DollarBanknote +
-	DollarBanknote + DollarBanknote +
-	DollarBanknote + DollarBanknote +
-	DollarBanknote + DollarBanknote +
-	DollarBanknote + DollarBanknote +
-	DollarBanknote + DollarBanknote + "\n"
+		DollarBanknote + DollarBanknote +
+		DollarBanknote + DollarBanknote +
+		DollarBanknote + DollarBanknote +
+		DollarBanknote + DollarBanknote +
+		DollarBanknote + DollarBanknote +
+		DollarBanknote + DollarBanknote + "\n"
 )

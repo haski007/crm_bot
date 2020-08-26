@@ -20,7 +20,7 @@ type m bson.M
 var (
 	PlusCashQueue = make(map[int]*betypes.Transaction)
 	MinusCashQueue = make(map[int]*betypes.Transaction)
-	TransactionsHostiryQueue = make(map[int]bool)
+	TransactionsHostoryQueue = make(map[int]bool)
 )
 
 func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
@@ -145,7 +145,7 @@ func MinusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 }
 
 func TransactionsHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	TransactionsHostiryQueue[update.CallbackQuery.From.ID] = true
+	TransactionsHostoryQueue[update.CallbackQuery.From.ID] = true
 	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "How much day you what to see?"))
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,

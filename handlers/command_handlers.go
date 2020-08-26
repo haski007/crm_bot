@@ -9,11 +9,14 @@ import (
 	"../database"
 	"../emoji"
 	"../keyboards"
+	"../utils"
 	"./users"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+
+type m bson.M
 
 func CommandMenuHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	if !users.IsUser(update.Message.From) {
@@ -91,4 +94,21 @@ func CommandRemoveUserHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 		strconv.Itoa(len(args))+" users has been removed!"+emoji.Recycling+"\n")
 	answer.ReplyMarkup = keyboards.MainMenu
 	return answer
+}
+
+func RemoveTodayCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	
+	fromDate := utils.GetTodayStartTime()
+	query := m{
+		"date": m{
+			"$gt":fromDate,
+		},
+	}
+
+	database.DailyCashCollection.RemoveAll(query)
+
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
+		"All clear")
+	answer.ReplyMarkup = keyboards.MainMenu
+	bot.Send(answer)
 }
