@@ -34,4 +34,5 @@ func deleteAllQueues(id int) {
 	delete(cashbox.TransactionsHostoryQueue, id)
 	delete(cashbox.SetStartDailyMoneyQueue, id)
 	delete(cashbox.GetStartDailyMoneyQueue, id)
+	delete(cashbox.EndDayQueue, id)
 }

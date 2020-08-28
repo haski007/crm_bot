@@ -79,11 +79,14 @@ var TypesListKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Add to Cashbox "+emoji.DollarBanknote, "plus_cash"),
 		tgbotapi.NewInlineKeyboardButtonData("Get from Cashbox "+emoji.MoneyWithWings, "minus_cash"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
+		tgbotapi.NewInlineKeyboardButtonData("End day " + emoji.EndArrow, "end_day"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Set start money " + emoji.FileBox, "set_start_cash"),

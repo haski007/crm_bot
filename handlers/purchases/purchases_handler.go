@@ -101,6 +101,7 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageC
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 	}
 
+
 	var prod betypes.Product
 	var message string
 

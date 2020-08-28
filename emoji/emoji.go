@@ -33,6 +33,9 @@ const (
 	RedTrianle      = "\U0001F53B"
 	FileBox         = "\U0001F5C3"
 	Eye 			= "\U0001F441"
+	EndArrow		= "\U0001F51A"
+	FingerDown 		= "\U0001F447"
+	PawPrint		= "\U0001F43E"
 
 	GreenDelimiter = Clover + Clover +
 		Clover + Clover +

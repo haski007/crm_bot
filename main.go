@@ -112,6 +112,8 @@ func main() {
 				cashbox.SetStartDailyMoneyHandler(bot, update)
 			case "get_start_cash":
 				cashbox.GetStartDailyMoneyHandler(bot, update)
+			case "end_day":
+				cashbox.EndDayHandler(bot, update)
 			}
 
 			// Handle callbacks with info
@@ -187,6 +189,8 @@ func main() {
 					cashbox.SetStartDailyMoney(bot, update)
 				} else if cashbox.GetStartDailyMoneyQueue[update.Message.From.ID] == true {
 					cashbox.GetStartDailyMoney(bot, update)
+				} else if cashbox.EndDayQueue[update.Message.From.ID] == true {
+					cashbox.EndDay(bot, update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)

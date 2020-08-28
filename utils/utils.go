@@ -45,3 +45,35 @@ func MakeEmojiRow(emoji string, len int) string {
 	}
 	return row
 }
+
+func GetTodayAllMoney() float64 {
+	var products []betypes.Product
+
+	fromDate := GetTodayStartTime()
+
+	database.ProductsCollection.Find(nil).All(&products)
+
+	var totalSum float64
+
+	for _, prod := range products {
+		i := len(prod.Purchases) - 1
+		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {
+			totalSum += prod.Purchases[i].Amount * prod.Price
+			i--
+		}
+	}
+
+
+	var dailyCash betypes.DailyCash
+
+	query := m{
+		"date": m{
+			"$gt": fromDate.Add(3 * time.Hour),
+		},
+	}
+	
+	database.DailyCashCollection.Find(query).One(&dailyCash) 
+
+	totalSum += dailyCash.Money
+	return totalSum
+}

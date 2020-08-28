@@ -30,7 +30,7 @@ func StoreHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 func ShowStorageHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var products []betypes.Product
 
-	err := database.ProductsCollection.Find(nil).Select(m{"name":1, "in_storage":1}).All(&products)
+	err := database.ProductsCollection.Find(nil).Select(m{"name":1, "in_storage":1, "type":1}).Sort("type").All(&products)
 	if err != nil {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
@@ -40,8 +40,22 @@ func ShowStorageHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 	
 	var message string
+	var t string
 	for i, prod := range products {
-		message += fmt.Sprintf("%2d) *%s* - in stock: *%v*\n", i + 1, prod.Name, prod.InStorage)
+		alert := ""
+		if prod.InStorage < 10 {
+			alert = emoji.RedTrianle
+		} else {
+			alert = emoji.GreenCircle
+		}
+
+		if prod.Type != t {
+			t = prod.Type
+			message += "*" + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint +
+			t + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + "*\n"
+		}
+
+		message += fmt.Sprintf("%02d) %s*%s* - in stock: *%v*\n", i + 1, alert, prod.Name, prod.InStorage)
 	}
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,

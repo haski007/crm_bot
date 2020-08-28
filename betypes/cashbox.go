@@ -2,9 +2,10 @@ package betypes
 
 import (
 	"time"
-
+	
 	"github.com/globalsign/mgo/bson"
 )
+
 
 type Cashbox struct {
 	ID bson.ObjectId			`bson:"_id,omitempty"`

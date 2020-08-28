@@ -122,21 +122,16 @@ func MinusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	MinusCashQueue[update.Message.From.ID].ID = bson.NewObjectId()
 
 	// ---> database manipulations
-	who := m{"type": "general"}
-	pushToArray := m{
-		"$push": m{
-			"transactions": MinusCashQueue[update.Message.From.ID]},
-		"$inc": m{
-				"money": MinusCashQueue[update.Message.From.ID].Diff,
-			},	
-	}
-	err := database.CashboxCollection.Update(who, pushToArray)
-	if err != nil {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR "+emoji.Warning+": {"+err.Error()+"}")
+	
+	delete(MinusCashQueue, update.Message.From.ID)
+
+	if err := database.MakeTransaction(MinusCashQueue[update.Message.From.ID]); err != nil {
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID,
+			"Error "+emoji.Warning+": {"+err.Error()+"}")
+		answer.ReplyMarkup = keyboards.MainMenu
 		bot.Send(answer)
 		return
 	}
-	delete(MinusCashQueue, update.Message.From.ID)
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 		"The transaction was successfully completed! "+  emoji.Check)

@@ -55,7 +55,7 @@ func GetMonthStatistics(update tgbotapi.Update) tgbotapi.MessageConfig {
 			totalMoney += prod.Purchases[i].Amount * prod.PrimeCost
 			i--
 		}
-		message += fmt.Sprintf("%-3d) %s  %-5s(*%v*) profit(*%v UAH*)\n", index, prod.Name, "sold", amount, profit)
+		message += fmt.Sprintf("%-3d) %s  %-5s(*%v*) profit(*%.2f UAH*)\n", index, prod.Name, "sold", amount, profit)
 	}
 
 	message += fmt.Sprintf("Total cash: *%v UAH*\nTotal profit: *%.2f UAH*", totalSum, totalSum - totalMoney)

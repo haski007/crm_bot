@@ -5,6 +5,7 @@ import (
 
 	"../betypes"
 	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
 
 var (
@@ -14,6 +15,7 @@ var (
 	CashboxCollection *mgo.Collection
 	DailyCashCollection *mgo.Collection
 )
+type m bson.M
 
 func init() {
 	session, err := mgo.Dial("mongodb://" + betypes.MongoUsername + ":" + betypes.MongoPassword + "@" + betypes.MongoHostname + ":" + betypes.MongoPort)
@@ -30,4 +32,21 @@ func init() {
 	if err = session.Ping(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func MakeTransaction(t *betypes.Transaction) error {
+	who := m{"type": "general"}
+	pushToArray := m{
+		"$push": m{
+			"transactions": t},
+		"$inc": m{
+			"money": t.Diff,
+		},	
+	}
+
+	err := CashboxCollection.Update(who, pushToArray)
+	if err != nil {
+		return err
+	}
+	return nil
 }
