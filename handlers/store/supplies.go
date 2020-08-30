@@ -47,7 +47,7 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	bot.Send(answer)
 }
 
-func ReceiveSuppliesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
+func ReceiveSuppliesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
 
@@ -55,13 +55,14 @@ func ReceiveSuppliesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbota
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
 	
-	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Supply quantity:")
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Supply quantity:"))
 }
 
-func MakeSupply(update tgbotapi.Update) tgbotapi.MessageConfig {
+func MakeSupply(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	supplyValue, err := strconv.ParseFloat(update.Message.Text, 4)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format!" + emoji.Warning)
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format!" + emoji.Warning)
+		bot.Send(answer)
 	}
 
 	who := m{
@@ -71,15 +72,15 @@ func MakeSupply(update tgbotapi.Update) tgbotapi.MessageConfig {
 	query := m{"$inc": m{
 		"in_storage": supplyValue,
 	}}
-
+	delete(SupplyQueue, update.Message.From.ID)
+	
 	if err := database.ProductsCollection.Update(who, query); err != nil {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning + "ERROR: {"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		bot.Send(answer)
 	}
 
-	delete(SupplyQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Supply was succesfully received! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
-	return answer
+	bot.Send(answer)
 }

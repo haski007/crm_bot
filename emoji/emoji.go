@@ -36,6 +36,7 @@ const (
 	EndArrow		= "\U0001F51A"
 	FingerDown 		= "\U0001F447"
 	PawPrint		= "\U0001F43E"
+	NoEntry			= "\U000026D4"
 
 	GreenDelimiter = Clover + Clover +
 		Clover + Clover +

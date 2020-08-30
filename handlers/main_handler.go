@@ -6,14 +6,16 @@ import (
 	"./settings"
 	"./purchases"
 	"./statistics"
+	"./store"
 	"./cashbox"
+	"./users"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func MainMenuHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	deleteAllQueues(update.CallbackQuery.From.ID)
 
-	message := "........."+emoji.House+"......."+emoji.Tree+"..\n   *Main Menu*   \n........"+
+	message := "........."+emoji.House+"......."+emoji.Tree+"..*Main Menu*........"+
 		emoji.HouseWithGarden+"..."+emoji.Car+"...."
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
@@ -35,4 +37,6 @@ func deleteAllQueues(id int) {
 	delete(cashbox.SetStartDailyMoneyQueue, id)
 	delete(cashbox.GetStartDailyMoneyQueue, id)
 	delete(cashbox.EndDayQueue, id)
+	delete(store.SupplyQueue, id)
+	delete(users.RegisterUserQueue, id)
 }

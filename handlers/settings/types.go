@@ -75,7 +75,7 @@ func ShowAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 func RemoveTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	RemoveTypeQueue[update.CallbackQuery.From.ID] = true
 
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me id of type you want to remove:")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me name of type you want to remove:")
 	bot.Send(answer)
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
@@ -91,9 +91,11 @@ func RemoveType(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			bot.Send(answer)
 		}
 	}()
-	typeID := bson.ObjectIdHex(update.Message.Text)
+	typeName := update.Message.Text
 
-	if err := database.ProductTypesCollection.RemoveId(typeID); err != nil {
+
+
+	if err := database.ProductTypesCollection.Remove(m{"type":typeName}); err != nil {
 		delete(RemoveTypeQueue, update.Message.From.ID)
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR "+emoji.Warning+": {"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
@@ -101,6 +103,15 @@ func RemoveType(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		return
 	}
 
+	if _, err := database.ProductsCollection.RemoveAll(m{"type":typeName}); err != nil {
+		delete(RemoveTypeQueue, update.Message.From.ID)
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR "+emoji.Warning+": {"+err.Error()+"}")
+		answer.ReplyMarkup = keyboards.MainMenu
+		bot.Send(answer)
+		return
+	}
+
+	delete(RemoveTypeQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Type has been succesfully removed!" + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)

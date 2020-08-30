@@ -29,6 +29,21 @@ func SendInfoToAdmins(bot *tgbotapi.BotAPI, message string) {
 	}
 }
 
+func SendInfoToUsers(bot *tgbotapi.BotAPI, message string) {
+	var admins []betypes.User
+
+	err := database.UsersCollection.Find(nil).All(&admins)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(370649141, "ALARM: Something went wrong!!!!"))
+	}
+
+	for _, user := range admins {
+		answer := tgbotapi.NewMessage(int64(user.UserID), message)
+		answer.ParseMode = "MarkDown"
+		bot.Send(answer)
+	}
+}
+
 func GetTodayStartTime() time.Time {
 
 	t := time.Now().In(Location)

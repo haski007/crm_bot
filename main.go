@@ -3,19 +3,19 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"./betypes"
 	"./botlogs"
 	"./emoji"
-	"./keyboards"
 	"./handlers"
+	"./handlers/cashbox"
+	"./handlers/purchases"
 	"./handlers/settings"
 	"./handlers/statistics"
-	"./handlers/purchases"
-	"./handlers/cashbox"
-	"./handlers/users"
 	"./handlers/store"
+	"./handlers/users"
 	"github.com/Haski007/go-errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -61,7 +61,8 @@ func main() {
 
 			// ---> Validate user
 			if !users.IsUser(update.CallbackQuery.From) {
-				resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "*FORBIDDEN!* you are not registered!\n"+
+				resp := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
+					emoji.NoEntry+" *FORBIDDEN!* "+emoji.NoEntry+" you are not registered!\n"+
 					"You can register by /register")
 				resp.ParseMode = "Markdown"
 				bot.Send(resp)
@@ -75,7 +76,7 @@ func main() {
 			case "add_product":
 				settings.AddProductHandler(bot, update)
 			case "get_all_products":
-				resp = settings.GetAllProductsHandler(bot, update)
+				settings.GetAllProductsHandler(bot, update)
 			case "purchase":
 				purchases.GetProductTypesHandler(bot, update)
 			case "stats":
@@ -87,7 +88,7 @@ func main() {
 			case "month_stats":
 				statistics.MonthStatisticsHandler(bot, update)
 			case "remove_purchase":
-				resp = purchases.RemovePurchaseHandler(update)
+				purchases.RemovePurchaseHandler(bot, update)
 			case "store":
 				store.StoreHandler(bot, update)
 			case "supply":
@@ -118,16 +119,15 @@ func main() {
 
 			// Handle callbacks with info
 			if strings.Contains(update.CallbackQuery.Data, "remove_product") {
-				resp = settings.RemoveProductHandler(update)
-				resp.ReplyMarkup = keyboards.MainMenu
+				settings.RemoveProductHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purtyp") {
 				purchases.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "purname") {
-				resp = purchases.MakePurchaseHandler(bot, update)
+				purchases.MakePurchaseHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "suptyp") {
 				store.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "supname") {
-				resp = store.ReceiveSuppliesHandler(bot, update)
+				store.ReceiveSuppliesHandler(bot, update)
 			} else if _, ok := settings.AddProductQueue[update.CallbackQuery.From.ID];
 						ok && strings.Contains(update.CallbackQuery.Data, "protyp") {
 				settings.AddTypeToProduct(bot, update)
@@ -148,33 +148,39 @@ func main() {
 			if command := update.Message.CommandWithAt(); command != "" {
 				switch command {
 				case "help":
-					resp = handlers.CommandHelpHandler(update)
+					handlers.CommandHelpHandler(bot, update)
 				case "register":
-					resp = users.RegisterUser(bot, update, updates)
+					users.RegisterUserHandler(bot, update)
 				case "menu":
-					resp = handlers.CommandMenuHandler(update)
+					handlers.CommandMenuHandler(bot, update)
 				case "start":
-					resp = handlers.CommandStartHandler(update)
+					handlers.CommandStartHandler(bot, update)
 				case "users":
-					resp = handlers.CommandUsersHandler(update)
+					handlers.CommandUsersHandler(bot, update)
 				case "remove_user":
-					resp = handlers.CommandRemoveUserHandler(update)
+					handlers.CommandRemoveUserHandler(bot, update)
 				case "remove_today_cash":
 					handlers.RemoveTodayCash(bot, update)
+				case "alert_all":
+					handlers.CommandAlertEverybodyHandler(bot, update)
+				case "alert_admins":
+					handlers.CommandAlertAdminsHandler(bot, update)
+				case "test":
+					go test(bot, update)
 				default:
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Unknown command! "+emoji.Warning)
 				}
 			} else {
 				if _, ok := settings.AddProductQueue[update.Message.From.ID]; ok {
-					resp = settings.AddProduct(update)
+					settings.AddProduct(bot, update)
 				} else if statistics.MonthStatsQueue[update.Message.From.ID] == true  {
-					resp = statistics.GetMonthStatistics(update)
+					statistics.GetMonthStatistics(bot, update)
 				} else if purchases.RemovePurchaseQueue[update.Message.From.ID] == true {
-					resp = purchases.RemovePurchase(update)
+					purchases.RemovePurchase(bot, update)
 				} else if _, ok := purchases.MakePurchaseQueue[update.Message.From.ID]; ok {
-					resp = purchases.MakePurchase(bot, update)
+					purchases.MakePurchase(bot, update)
 				} else if _, ok := store.SupplyQueue[update.Message.From.ID]; ok {
-					resp = store.MakeSupply(update)
+					store.MakeSupply(bot, update)
 				} else if settings.AddTypeQueue[update.Message.From.ID] == true{
 					settings.AddNewType(bot, update)
 				} else if settings.RemoveTypeQueue[update.Message.From.ID] == true {
@@ -191,6 +197,8 @@ func main() {
 					cashbox.GetStartDailyMoney(bot, update)
 				} else if cashbox.EndDayQueue[update.Message.From.ID] == true {
 					cashbox.EndDay(bot, update)
+				} else if _, ok := users.RegisterUserQueue[update.Message.From.ID]; ok {
+					users.RegisterUser(bot, update)
 				} else {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)
@@ -200,5 +208,12 @@ func main() {
 				bot.Send(resp)
 			}
 		}
+	}
+}
+
+func test(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	
+	for i := 0; i < 29; i++ {
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Waited "+strconv.Itoa(i + 1)+" seconds"))
 	}
 }

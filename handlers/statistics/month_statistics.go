@@ -23,13 +23,14 @@ func MonthStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	bot.Send(answer)
 }
 
-func GetMonthStatistics(update tgbotapi.Update) tgbotapi.MessageConfig {
+func GetMonthStatistics(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	fromDate, err := time.Parse("01.2006", update.Message.Text)
 	if err != nil {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "*WRONG!* {"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
 		answer.ParseMode = "MarkDown"
-		return answer
+		bot.Send(answer)
+		return
 	}
 
 	toDate := fromDate.AddDate(0, 1, -1).Add(23 * time.Hour + 59 * time.Minute)
@@ -64,5 +65,5 @@ func GetMonthStatistics(update tgbotapi.Update) tgbotapi.MessageConfig {
 	answer.ParseMode = "MarkDown"
 	answer.ReplyMarkup = keyboards.MainMenu
 
-	return answer
+	bot.Send(answer)
 }

@@ -17,12 +17,12 @@ import (
 type m bson.M
 
 // Queue of users who are trying to add new product
-var AddProductQueue = make(map[int]*betypes.Product)
-
-var messagesToDelete = make(map[int64]int)
+var (
+	AddProductQueue = make(map[int]*betypes.Product)
+)
 
 // GetAllProductsHandler prints all produtcs from "products" collection.
-func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
+func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	var products []betypes.Product
 
@@ -32,34 +32,39 @@ func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotap
 		prod.Name = "*" + prod.Name + "*"
 
 		j, _ := json.Marshal(prod)
-		msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, strconv.Itoa(i)+") "+string(j))
-		msg.ParseMode = "Markdown"
+		answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, strconv.Itoa(i)+") "+string(j))
+		answer.ParseMode = "Markdown"
 		prodKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonData("Remove "+emoji.Minus, "remove_product "+prod.ID.Hex()),
 			),
 		)
-		msg.ReplyMarkup = prodKeyboard
-		bot.Send(msg)
+		answer.ReplyMarkup = prodKeyboard
+		bot.Send(answer)
 	}
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Here you come!")
 	answer.ReplyMarkup = keyboards.MainMenu
-	return answer
+	bot.Send(answer)
 }
 
 // RemoveProductHandler removes product from "products" collection
-func RemoveProductHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func RemoveProductHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	prodID := strings.Split(update.CallbackQuery.Data, " ")[1]
 
 	err := database.ProductsCollection.Remove(bson.M{"_id": bson.ObjectIdHex(prodID)})
 	if err != nil {
-		return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Removing has been FAILED! {"+err.Error()+"}")
+		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Removing has been FAILED! {"+err.Error()+"}"))
+		return
 	}
 
-	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "The product has been removed succesfully!")
+
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "The product has been removed succesfully!")
+	answer.ReplyMarkup = keyboards.MainMenu
+
+	bot.Send(answer)
 }
 
 // AddProductHandler adds product to database collection "products"
@@ -72,7 +77,7 @@ func AddProductHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 }
 
 // addProduct prompt user to get name, type and prise of product. Save it in DB
-func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
+func AddProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	userID := update.Message.From.ID
 
 	prod := AddProductQueue[update.Message.From.ID]
@@ -88,20 +93,22 @@ func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 			[]tgbotapi.InlineKeyboardButton{keyboards.MainMenuButton})
 		answer.ReplyMarkup = typesKeyboard
 
-		return answer
+		bot.Send(answer)
 	} else if prod.PrimeCost == 0.0 {
 		prod.PrimeCost, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+			return
 		}
 
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Enter *selling price* price:")
 		answer.ParseMode = "MarkDown"
-		return answer
+		bot.Send(answer)
 	} else {
 		prod.Price, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+			return
 		}
 
 		var answer tgbotapi.MessageConfig
@@ -115,7 +122,7 @@ func AddProduct(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 		delete(AddProductQueue, userID)
 		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		bot.Send(answer)
 	}
 }
 

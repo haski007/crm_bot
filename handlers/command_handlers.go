@@ -18,48 +18,55 @@ import (
 
 type m bson.M
 
-func CommandMenuHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func CommandMenuHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsUser(update.Message.From) {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "*FORBIDDEN!* you are not registered!\n"+
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, emoji.NoEntry+" *FORBIDDEN!* "+emoji.NoEntry+" you are not registered!\n"+
 			"You can register by /register")
 		answer.ParseMode = "Markdown"
-		return answer
+		bot.Send(answer)
+		return
 	}
+
+	deleteAllQueues(update.Message.From.ID)
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 		"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
 			emoji.HouseWithGarden+"..."+emoji.Car+"....")
 	answer.ReplyMarkup = keyboards.MainMenu
-	return answer
+	bot.Send(answer)
 }
 
 // CommandHelpHandler handle command "/help"
-func CommandHelpHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func CommandHelpHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	resp := tgbotapi.NewMessage(update.Message.Chat.ID,
 		"This bot was created to help with your small bussines logging/management.\n/menu to start using this.")
-	return resp
+	bot.Send(resp)
 }
 
-func CommandStartHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "Hi, "+update.Message.From.FirstName+".\n"+
+func CommandStartHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	answer :=  tgbotapi.NewMessage(update.Message.Chat.ID, "Hi, "+update.Message.From.FirstName+".\n"+
 		"Here is an awesome telegram bot, it can help you to become more involved"+
 		"in your small bussines.\n"+
 		"To start using bot you need to be registered (/register).\n"+
 		"Author: @pdemian\n")
+	bot.Send(answer)
 }
 
-func CommandUsersHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func CommandUsersHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.Message.From) {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You have not enough permissions!")
 		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		bot.Send(answer)
+		return
 	}
 
 	var users []betypes.User
 
 	err := database.UsersCollection.Find(nil).All(&users)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
+		bot.Send(answer)
+		return
 	}
 
 	var message string
@@ -70,14 +77,15 @@ func CommandUsersHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 	}
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
-	return answer
+	bot.Send(answer)
 }
 
-func CommandRemoveUserHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func CommandRemoveUserHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.Message.From) {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You have not enough permissions!")
 		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		bot.Send(answer)
+		return
 	}
 
 	args := strings.Fields(update.Message.CommandArguments())
@@ -87,13 +95,14 @@ func CommandRemoveUserHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
 		if err != nil {
 			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
 			answer.ReplyMarkup = keyboards.MainMenu
-			return answer
+			bot.Send(answer)
+			return
 		}
 	}
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 		strconv.Itoa(len(args))+" users has been removed!"+emoji.Recycling+"\n")
 	answer.ReplyMarkup = keyboards.MainMenu
-	return answer
+	bot.Send(answer)
 }
 
 func RemoveTodayCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
@@ -111,4 +120,30 @@ func RemoveTodayCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		"All clear")
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
+}
+
+func CommandAlertEverybodyHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if !users.IsAdmin(update.Message.From) {
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You haven't enough permissions! " + emoji.NoEntry)
+		answer.ReplyMarkup = keyboards.MainMenu
+		bot.Send(answer)
+		return
+	}
+
+	message := update.Message.CommandArguments()
+
+	utils.SendInfoToUsers(bot, message)
+}
+
+func CommandAlertAdminsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if !users.IsAdmin(update.Message.From) {
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You haven't enough permissions! " + emoji.NoEntry)
+		answer.ReplyMarkup = keyboards.MainMenu
+		bot.Send(answer)
+		return
+	}
+
+	message := update.Message.CommandArguments()
+
+	utils.SendInfoToAdmins(bot, message)
 }

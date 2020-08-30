@@ -25,7 +25,7 @@ func InitEveryDayStatistics(bot *tgbotapi.BotAPI) {
 	for {
 		time.Sleep(d)
 		d = (24 * time.Hour)
-		utils.SendInfoToAdmins(bot, getDailyStatistics())
+		go utils.SendInfoToAdmins(bot, getDailyStatistics())
 	}
 
 }

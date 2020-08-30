@@ -58,7 +58,7 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	bot.Send(answer)
 }
 
-func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.MessageConfig {
+func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
@@ -67,17 +67,18 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) tgbotapi.
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
 	
-	return tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:")
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:"))
 }
 
-func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageConfig {
+func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	var purchase betypes.Purchase
 
 	var err error
 
 	purchase.Amount, err = strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again")
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+		return
 	}
 
 	purchase.SaleDate = time.Now()
@@ -98,7 +99,8 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageC
 	// ---> Add purchase to db
 	err = database.ProductsCollection.Update(who, pushToArray)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}"))
+		return
 	}
 
 
@@ -110,7 +112,8 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageC
 	if err != nil {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		bot.Send(answer)
+		return
 	} else if prod.InStorage < 0 {
 		prod.InStorage = 0
 		updateQuery := m{
@@ -122,16 +125,17 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageC
 		if err != nil {
 			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Purchase has been FAILED!{"+err.Error()+"}")
 			answer.ReplyMarkup = keyboards.MainMenu
-			return answer
+			bot.Send(answer)
+			return
 		}
 		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
 		
-		utils.SendInfoToAdmins(bot, message)
+		go utils.SendInfoToAdmins(bot, message)
 	} else if prod.InStorage < 10.0 {
 		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
-		utils.SendInfoToAdmins(bot, message)
+		go utils.SendInfoToAdmins(bot, message)
 	} 
 	message += "Purchase has been added succesfully " + emoji.Check
 
@@ -139,18 +143,18 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) tgbotapi.MessageC
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
 	answer.ReplyMarkup = keyboards.MainMenu
 	answer.ParseMode = "MarkDown"
-	return answer
+	bot.Send(answer)
 
 }
 
-func RemovePurchaseHandler(update tgbotapi.Update) tgbotapi.MessageConfig {
+func RemovePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	RemovePurchaseQueue[update.CallbackQuery.From.ID] = true
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me id of purchase you want to remove:")
 
-	return answer
+	bot.Send(answer)
 }
 
-func RemovePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
+func RemovePurchase(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	purchaseID := bson.ObjectIdHex(update.Message.Text)
 
 	who := m{
@@ -168,7 +172,8 @@ func RemovePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 	if err := database.ProductsCollection.Find(who).Distinct("purchases", &purchases); err != nil {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning + "ERROR: {"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
-		return answer
+		bot.Send(answer)
+		return
 	}
 
 	var quantity float64
@@ -197,12 +202,13 @@ func RemovePurchase(update tgbotapi.Update) tgbotapi.MessageConfig {
 	err := database.ProductsCollection.Update(who, query)
 	if err != nil {
 		delete(RemovePurchaseQueue, update.Message.From.ID)
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}")
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "ERROR: {"+err.Error()+"}"))
+		return
 	}
 
 	delete(RemovePurchaseQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "An purchase has been succesfully removed! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 
-	return answer
+	bot.Send(answer)
 }
