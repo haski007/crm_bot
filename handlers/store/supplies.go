@@ -84,7 +84,6 @@ func MakeSupply(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	}
 	
 	whoIfLess0 := m{
-		// "_id":SupplyQueue[update.Message.From.ID],
 		"in_storage":m{
 			"$lt":0,
 		},
