@@ -6,13 +6,23 @@ import (
 
 	"../../betypes"
 	"../../database"
+	"../../emoji"
 	"../../keyboards"
+	"../users"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var MonthStatsQueue = make(map[int]bool)
 
 func MonthStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if !users.IsAdmin(update.CallbackQuery.From) {
+		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			emoji.NoEntry + "You have not enough permissions" + emoji.NoEntry,
+			keyboards.MainMenu) 
+		bot.Send(answer)
+		return
+	}
 
 	MonthStatsQueue[update.CallbackQuery.From.ID] = true
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,

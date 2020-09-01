@@ -19,7 +19,7 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Statistics "+emoji.GraphicIncrease, "stats"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Store "+emoji.Package, "store"),
+		tgbotapi.NewInlineKeyboardButtonData("The stock "+emoji.Package, "store"),
 		tgbotapi.NewInlineKeyboardButtonData("Cashbox "+emoji.MoneyFace, "cashbox"),
 	),
 )
@@ -79,18 +79,15 @@ var TypesListKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Add to Cashbox "+emoji.DollarBanknote, "plus_cash"),
 		tgbotapi.NewInlineKeyboardButtonData("Get from Cashbox "+emoji.MoneyWithWings, "minus_cash"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("End day " + emoji.EndArrow, "end_day"),
+		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Set start money " + emoji.FileBox, "set_start_cash"),
-		tgbotapi.NewInlineKeyboardButtonData("Get start money " + emoji.Eye, "get_start_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("Start day " + emoji.FileBox, "set_start_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("End day " + emoji.EndArrow, "end_day"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,

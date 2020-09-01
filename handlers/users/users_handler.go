@@ -59,7 +59,7 @@ func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		user.Status = "user"
 	}
 
-	go utils.SendInfoToAdmins(bot, fmt.Sprintf("New user has been registred: %s (%s)\nAs *%s*",
+	go utils.SendInfoToAdmins(bot, fmt.Sprintf("New user has been registred: %s (@%s)\nAs *%s*",
 		user.FirstName, user.UserName, user.Status))
 
 	

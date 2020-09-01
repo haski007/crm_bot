@@ -7,6 +7,7 @@ import (
 	"../../betypes"
 	"../../database"
 	"../../utils"
+	"../../emoji"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -36,14 +37,22 @@ func getDailyStatistics() string {
 
 	fromDate := utils.GetTodayStartTime()
 
-	database.ProductsCollection.Find(nil).All(&products)
+	database.ProductsCollection.Find(nil).Sort("type").All(&products)
 
 	var totalSum float64
 	var totalMoney float64
 
 	var message string = "  "
 
+	var tmp string
 	for index, prod := range products {
+
+		if prod.Type != tmp {
+			tmp = prod.Type
+			message += "*" + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint +
+			tmp + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + "*\n"
+		}
+
 		amount := 0.0
 		i := len(prod.Purchases) - 1
 		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {

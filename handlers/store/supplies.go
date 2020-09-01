@@ -68,17 +68,34 @@ func MakeSupply(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	who := m{
 		"_id":SupplyQueue[update.Message.From.ID],
 	}
-
-	query := m{"$inc": m{
-		"in_storage": supplyValue,
-	}}
+	query := m{
+		"$inc": m{
+			"in_storage": supplyValue,
+		},
+	}
 	delete(SupplyQueue, update.Message.From.ID)
+
+	
 	
 	if err := database.ProductsCollection.Update(who, query); err != nil {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning + "ERROR: {"+err.Error()+"}")
 		answer.ReplyMarkup = keyboards.MainMenu
 		bot.Send(answer)
 	}
+	
+	whoIfLess0 := m{
+		// "_id":SupplyQueue[update.Message.From.ID],
+		"in_storage":m{
+			"$lt":0,
+		},
+	}
+	queryIfLess0 := m{
+		"$set":m{
+			"in_storage":0,
+		},
+	}
+	database.ProductsCollection.UpdateAll(whoIfLess0, queryIfLess0)
+
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Supply was succesfully received! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu

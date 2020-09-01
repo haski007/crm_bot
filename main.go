@@ -111,8 +111,6 @@ func main() {
 				cashbox.TransactionsHistoryHandler(bot, update)
 			case "set_start_cash":
 				cashbox.SetStartDailyMoneyHandler(bot, update)
-			case "get_start_cash":
-				cashbox.GetStartDailyMoneyHandler(bot, update)
 			case "end_day":
 				cashbox.EndDayHandler(bot, update)
 			}
@@ -193,8 +191,6 @@ func main() {
 					cashbox.ShowTransactionsHistory(bot, update)
 				} else if cashbox.SetStartDailyMoneyQueue[update.Message.From.ID] == true {
 					cashbox.SetStartDailyMoney(bot, update)
-				} else if cashbox.GetStartDailyMoneyQueue[update.Message.From.ID] == true {
-					cashbox.GetStartDailyMoney(bot, update)
 				} else if cashbox.EndDayQueue[update.Message.From.ID] == true {
 					cashbox.EndDay(bot, update)
 				} else if _, ok := users.RegisterUserQueue[update.Message.From.ID]; ok {

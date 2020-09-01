@@ -122,6 +122,15 @@ func GetCurrentDayStatsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.CallbackQuery.From) {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
+			emoji.NoEntry + "You have not enough permissions" + emoji.NoEntry,
+			keyboards.MainMenu) 
+		bot.Send(answer)
+		return
+	}
+
+	if !users.IsAdmin(update.CallbackQuery.From) {
+		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
 			"You have not enough permissions!" + emoji.Warning, keyboards.MainMenu)
 		bot.Send(answer)
 	}

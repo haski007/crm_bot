@@ -24,7 +24,37 @@ var (
 )
 
 func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	message := fmt.Sprintf("%s\n*Cashbox*\n%s", emoji.MoneyFace, emoji.MoneyFace)
+
+	var cashbox betypes.Cashbox
+	
+	if err := database.CashboxCollection.Find(m{"type":"general"}).Select(m{"money":1}).One(&cashbox); err != nil {
+		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			"ERROR "+emoji.Warning+": {"+err.Error()+"}",
+			keyboards.MainMenu)
+		answer.ParseMode = "MarkDown"
+		bot.Send(answer)
+	}
+
+	query := m{
+		"date": m{
+			"$gt":utils.GetTodayStartTime(),
+		},
+	}
+
+	var dailyCash betypes.DailyCash
+	
+	database.DailyCashCollection.Find(query).One(&dailyCash)
+
+	var startMoneySTR string
+	if dailyCash.User == "" {
+		startMoneySTR = "Not set yet!"
+	} else {
+		startMoneySTR = fmt.Sprintf("%.2f UAH", dailyCash.Money)
+	}
+
+	message := fmt.Sprintf("%s\nCashbox: *%.2f UAH*;\nToday's start money: *%s*\n%s",
+		emoji.MoneyFace, cashbox.Money, startMoneySTR, emoji.MoneyFace)
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,

@@ -17,7 +17,6 @@ import (
 
 var (
 	SetStartDailyMoneyQueue = make(map[int]bool)
-	GetStartDailyMoneyQueue = make(map[int]bool)
 	EndDayQueue = make(map[int]bool)
 )
 
@@ -74,52 +73,6 @@ func SetStartDailyMoney(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Succesfully set! " + emoji.Check)
-	answer.ReplyMarkup = keyboards.MainMenu
-	bot.Send(answer)
-}
-
-
-func GetStartDailyMoneyHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-
-	// ---> Promp User
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		"What date you whant to see? (in format '25.12.2020')"))
-
-	GetStartDailyMoneyQueue[update.CallbackQuery.From.ID] = true	
-	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
-		update.CallbackQuery.Message.MessageID))
-}
-
-func GetStartDailyMoney(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	fromDate, err := time.Parse("02.01.2006", update.Message.Text)
-	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			"ERROR "+emoji.Warning +": {"+err.Error()+"}"))
-		return
-	}
-	delete(GetStartDailyMoneyQueue, update.Message.From.ID)
-
-	toDate := fromDate.Add(23 * time.Hour + 59 * time.Minute)
-	query := m{
-		"date": m{
-			"$gt":fromDate,
-			"$lt":toDate,
-		},
-	}
-
-	var dailyCash betypes.DailyCash
-	
-	if err := database.DailyCashCollection.Find(query).One(&dailyCash); err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
-		return
-	}
-
-	message := fmt.Sprintf("Date: %s\nThe start cash was: %.2f\nUser: %s\n",
-		dailyCash.Date.Format("02.01.2006 15:04:05"),
-		dailyCash.Money,
-		dailyCash.User)
-
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
