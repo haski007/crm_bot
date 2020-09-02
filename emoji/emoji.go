@@ -38,6 +38,7 @@ const (
 	PawPrint		= "\U0001F43E"
 	NoEntry			= "\U000026D4"
 	Pen				= "\U0001F58A"
+	Pencil			= "\U0000270F"
 
 	GreenDelimiter = Clover + Clover +
 		Clover + Clover +

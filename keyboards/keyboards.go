@@ -94,6 +94,21 @@ var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
+var EditProductKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Name", "edit prod_name"),
+		tgbotapi.NewInlineKeyboardButtonData("Margin", "edit prod_margin"),
+		tgbotapi.NewInlineKeyboardButtonData("Prime Cost", "edit prod_prime"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Price", "edit prod_price"),
+		tgbotapi.NewInlineKeyboardButtonData("Unit", "edit prod_unit"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		MainMenuButton,
+	),
+)
+
 
 func GetTypesKeyboard(data string) tgbotapi.InlineKeyboardMarkup {
 

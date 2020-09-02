@@ -30,7 +30,12 @@ func StoreHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 func ShowStorageHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var products []betypes.Product
 
-	err := database.ProductsCollection.Find(nil).Select(m{"name":1, "in_storage":1, "type":1}).Sort("type").All(&products)
+	err := database.ProductsCollection.Find(nil).Select(m{
+		"name":1,
+		"in_storage":1,
+		"type":1,
+		"unit":1,
+		}).Sort("type").All(&products)
 	if err != nil {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
@@ -55,7 +60,8 @@ func ShowStorageHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			t + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + "*\n"
 		}
 
-		message += fmt.Sprintf("%02d) %s*%s* - in stock: *%v*\n", i + 1, alert, prod.Name, prod.InStorage)
+		message += fmt.Sprintf("%02d) %s*%s* - in stock: *%v %s*\n",
+			i + 1, alert, prod.Name, prod.InStorage, prod.Unit)
 	}
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,

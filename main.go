@@ -126,9 +126,15 @@ func main() {
 				store.GetProductsByTypeHandler(bot, update)
 			} else if strings.Contains(update.CallbackQuery.Data, "supname") {
 				store.ReceiveSuppliesHandler(bot, update)
+			} else if strings.Contains(update.CallbackQuery.Data, "edit_product") {
+				settings.EditProductHandler(bot, update)
+			} else if strings.Contains(update.CallbackQuery.Data, "getprodstyp") {
+				settings.GetAllProducts(bot, update)
 			} else if _, ok := settings.AddProductQueue[update.CallbackQuery.From.ID];
 						ok && strings.Contains(update.CallbackQuery.Data, "protyp") {
 				settings.AddTypeToProduct(bot, update)
+			} else if strings.Contains(update.CallbackQuery.Data, "edit ") {
+				settings.GetEntityToEdit(bot, update)
 			}
 
 			if resp.Text != "" {
@@ -195,7 +201,17 @@ func main() {
 					cashbox.EndDay(bot, update)
 				} else if _, ok := users.RegisterUserQueue[update.Message.From.ID]; ok {
 					users.RegisterUser(bot, update)
-				} else {
+				} else if _, ok := settings.EditProductNameQueue[update.Message.From.ID]; ok{
+					settings.EditProductName(bot, update)
+				} else if _, ok := settings.EditProductMarginQueue[update.Message.From.ID]; ok{
+					settings.EditProductMargin(bot, update)
+				} else if _, ok := settings.EditProductPrimeQueue[update.Message.From.ID]; ok{
+					settings.EditProductPrime(bot, update)
+				} else if _, ok := settings.EditProductPriceQueue[update.Message.From.ID]; ok{
+					settings.EditProductPrice(bot, update)
+				} else if _, ok := settings.EditProductUnitQueue[update.Message.From.ID]; ok{
+					settings.EditProductUnit(bot, update)
+				} else  {
 					resp = tgbotapi.NewMessage(update.Message.Chat.ID,
 						emoji.Warning+" It's not a command! "+emoji.Warning)
 				}

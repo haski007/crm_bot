@@ -11,9 +11,11 @@ type Product struct {
 	ID        bson.ObjectId `json:"-" bson:"_id,omitempty"`
 	Name      string        `json:"name" bson:"name"`
 	Type      string        `json:"type" bson:"type"`
+	Unit      string        `bson:"unit"`
 	Price     float64       `json:"price" bson:"price"`
-	PrimeCost float64 		`json:"prime-cost" bson:"prime_cost"`
-	InStorage float64 		`json:"in-storage" bson:"in_storage"`
+	PrimeCost float64       `json:"prime-cost" bson:"prime_cost"`
+	Margin    float64       `bson:"margin"`
+	InStorage float64       `json:"in-storage" bson:"in_storage"`
 	Purchases []Purchase    `json:"-" bson:"purchases"`
 }
 
@@ -22,5 +24,5 @@ type Purchase struct {
 	ID       bson.ObjectId `bson:"_id,omitempty"`
 	Amount   float64       `bson:"amount"`
 	SaleDate time.Time     `bson:"sale_date"`
-	Seller   string           `bson:"seller"`
+	Seller   string        `bson:"seller"`
 }

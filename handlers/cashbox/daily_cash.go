@@ -96,7 +96,7 @@ func EndDay(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	money, err := strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Wrong type format! {"+err.Error()+"}"))
+			"Wrong type format! Try again!"))
 		return
 	}
 	

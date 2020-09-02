@@ -2,29 +2,28 @@ package betypes
 
 import (
 	"time"
-	
+
 	"github.com/globalsign/mgo/bson"
 )
 
-
 type Cashbox struct {
-	ID bson.ObjectId			`bson:"_id,omitempty"`
-	Type string					`bson:"type"`
-	Money float64				`bson:"money"`
-	Transactions []Transaction	`bson:"transactions"`
+	ID           bson.ObjectId `bson:"_id,omitempty"`
+	Type         string        `bson:"type"`
+	Money        float64       `bson:"money"`
+	Transactions []Transaction `bson:"transactions"`
 }
 
 type Transaction struct {
-	ID bson.ObjectId	`bson:"_id,omitempty"`
-	Author string		`bson:"author"`
-	Diff float64		`bson:"diff"`
-	DataTime time.Time	`bson:"data_time"`
-	Comment string		`bson:"comment"`
+	ID       bson.ObjectId `bson:"_id,omitempty"`
+	Author   string        `bson:"author"`
+	Diff     float64       `bson:"diff"`
+	DataTime time.Time     `bson:"data_time"`
+	Comment  string        `bson:"comment"`
 }
 
 type DailyCash struct {
-	ID bson.ObjectId `bson:"_id,omitempty"`
-	Money float64	`bson:"money"`
-	User string `bson:"user"`
-	Date  time.Time	`bson:"date"`
+	ID    bson.ObjectId `bson:"_id,omitempty"`
+	Money float64       `bson:"money"`
+	User  string        `bson:"user"`
+	Date  time.Time     `bson:"date"`
 }

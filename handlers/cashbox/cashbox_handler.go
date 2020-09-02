@@ -11,6 +11,7 @@ import (
 	"../../emoji"
 	"../../keyboards"
 	"../../utils"
+	"../users"
 	"github.com/globalsign/mgo/bson"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -24,6 +25,14 @@ var (
 )
 
 func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if !users.IsAdmin(update.CallbackQuery.From) {
+		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
+			update.CallbackQuery.Message.MessageID,
+			emoji.NoEntry + "You have not enough permissions" + emoji.NoEntry,
+			keyboards.MainMenu) 
+		bot.Send(answer)
+		return
+	}
 
 	var cashbox betypes.Cashbox
 	
@@ -53,8 +62,10 @@ func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		startMoneySTR = fmt.Sprintf("%.2f UAH", dailyCash.Money)
 	}
 
-	message := fmt.Sprintf("%s\nCashbox: *%.2f UAH*;\nToday's start money: *%s*\n%s",
-		emoji.MoneyFace, cashbox.Money, startMoneySTR, emoji.MoneyFace)
+	totalSum := utils.GetTodayAllMoney()
+
+	message := fmt.Sprintf("%s\nCashbox: *%.2f UAH*;\nToday's start money: *%s*\nToday's total sum: *%.2f UAH*\n%s",
+		emoji.MoneyFace, cashbox.Money, startMoneySTR, totalSum, emoji.MoneyFace)
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
@@ -80,7 +91,7 @@ func PlusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if PlusCashQueue[update.Message.From.ID].Diff == 0.0 {
 		m, err := strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! {"+err.Error()+"}")
+			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again!")
 			bot.Send(answer)
 			return
 		}
@@ -135,7 +146,7 @@ func MinusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if MinusCashQueue[update.Message.From.ID].Diff == 0.0 {
 		m, err := strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! {"+err.Error()+"}")
+			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again!")
 			bot.Send(answer)
 			return
 		}
@@ -153,15 +164,16 @@ func MinusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	// ---> database manipulations
 	
-	delete(MinusCashQueue, update.Message.From.ID)
-
+	
 	if err := database.MakeTransaction(MinusCashQueue[update.Message.From.ID]); err != nil {
 		answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 			"Error "+emoji.Warning+": {"+err.Error()+"}")
-		answer.ReplyMarkup = keyboards.MainMenu
-		bot.Send(answer)
-		return
-	}
+			answer.ReplyMarkup = keyboards.MainMenu
+			bot.Send(answer)
+			return
+		}
+		
+	delete(MinusCashQueue, update.Message.From.ID)
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
 		"The transaction was successfully completed! "+  emoji.Check)
@@ -213,7 +225,7 @@ func ShowTransactionsHistory(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			cashbox.Transactions[i].Diff,
 			cashbox.Transactions[i].Author,
 			cashbox.Transactions[i].Comment,
-			cashbox.Transactions[i].DataTime.Format("02.01.2006 15:04:05"),
+			cashbox.Transactions[i].DataTime.In(utils.Location).Format("02.01.2006 15:04:05"),
 			cashbox.Transactions[i].ID,
 		})
 		
@@ -231,7 +243,7 @@ func ShowTransactionsHistory(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			message += emoji.RedDelimiter
 		}
 			
-		message += fmt.Sprintf("Transaction #%d\n%s: %.2f\nAuthor: %s\nComment: %s\nDataTime: %s\n%v\n",
+		message += fmt.Sprintf("Transaction #%d\n%s: *%.2f UAH*\nAuthor: %s\nComment: *%s*\nDataTime: %s\n%v\n",
 			index, event, math.Abs(transactions[i].diff), transactions[i].author,
 			transactions[i].comment, transactions[i].datatime,
 			transactions[i].id)
