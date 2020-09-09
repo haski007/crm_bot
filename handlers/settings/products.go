@@ -65,13 +65,13 @@ func AddProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		answer.ReplyMarkup = typesKeyboard
 
 		bot.Send(answer)
-	} else if prod.PrimeCost == 0.0 {
+	} else if prod.Unit == "" {
 		prod.Unit = update.Message.Text
 
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Set please unit for this product")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Enter prime cost")
 		answer.ParseMode = "MarkDown"
 		bot.Send(answer)
-	} else if prod.Unit == "" {
+	} else if prod.PrimeCost == 0.0 {
 		prod.PrimeCost, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
@@ -110,7 +110,7 @@ func AddTypeToProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	AddProductQueue[update.CallbackQuery.From.ID].Type = t
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		"Enter prime cost")
+		"Set please unit for this product")
 	bot.Send(answer)
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
