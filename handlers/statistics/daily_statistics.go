@@ -61,10 +61,10 @@ func getDailyStatistics() string {
 			totalMoney += prod.Purchases[i].Amount * prod.PrimeCost
 			i--
 		}
-		message += fmt.Sprintf("%02d) *%s*   %-6s %.2f *(%.2f UAH)*\n", index + 1, prod.Name, "sold:", amount, amount * prod.Price)
+		message += fmt.Sprintf("%02d) *%s*   продано: %.2f %s *(%.2f UAH)*\n", index + 1, prod.Name, amount, prod.Unit, amount * prod.Price)
 	}
 
-	message += fmt.Sprintf("Total cash: %v\nTotal profit: %.2f", totalSum, totalSum - totalMoney)
+	message += fmt.Sprintf("Total cash: *%.2f UAH*\nTotal profit: *%.2f UAH*", totalSum, totalSum - totalMoney)
 
 	return message
 }

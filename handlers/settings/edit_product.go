@@ -26,7 +26,7 @@ func EditProductHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	EditProductQueue[update.CallbackQuery.From.ID] = bson.ObjectIdHex(prodID)
 
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Choose what do you want to edit!")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Что именно вы хотите изменить?!")
 	answer.ReplyMarkup = keyboards.EditProductKeyboard
 
 	bot.Send(answer)
@@ -42,23 +42,23 @@ func GetEntityToEdit(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	case "prod_name":
 		EditProductNameQueue[update.CallbackQuery.From.ID] = productID
 		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, 
-			"Send a new value for name of product!"))
+			"Введите новое название продукта!"))
 	case "prod_margin":
 		EditProductMarginQueue[update.CallbackQuery.From.ID] = productID
 		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, 
-			"Send a new value for margin of product!"))
+			"Введите новое значение маржи продукта!"))
 	case "prod_prime":
 		EditProductPrimeQueue[update.CallbackQuery.From.ID] = productID
 		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, 
-			"Send a new value for prime cost of product!"))
+			"Введите новое значение себестоимости продукта!"))
 	case "prod_price":
 		EditProductPriceQueue[update.CallbackQuery.From.ID] = productID
 		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, 
-			"Send a new value for price of product!"))
+			"Введите новое значение цены продажи продукта!"))
 	case "prod_unit":
 		EditProductUnitQueue[update.CallbackQuery.From.ID] = productID
 		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, 
-			"Send a new value for unit of product!"))
+			"Введите новую единицу измерения!"))
 	}
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
@@ -79,7 +79,7 @@ func EditProductName(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	database.ProductsCollection.Update(who, query)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Product's name was successfully edited " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Название продукта было успешно изменено " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -88,7 +88,7 @@ func EditProductMargin(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	newValue, err := strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз:"))
 		return
 	}
 
@@ -105,7 +105,7 @@ func EditProductMargin(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	database.ProductsCollection.Update(who, query)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Product's margin was successfully edited " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Маржа продукта была успешно изменена " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -114,7 +114,7 @@ func EditProductPrime(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	newValue, err := strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз:"))
 		return
 	}
 
@@ -131,7 +131,7 @@ func EditProductPrime(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	database.ProductsCollection.Update(who, query)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Product's prime cost was successfully edited " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Себестоимость продукта успешно изменена! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -140,7 +140,7 @@ func EditProductPrice(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	newValue, err := strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз:"))
 		return
 	}
 
@@ -157,7 +157,7 @@ func EditProductPrice(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	database.ProductsCollection.Update(who, query)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Product's price was successfully edited " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Цена продажи продукта была успешно изменена " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -176,7 +176,7 @@ func EditProductUnit(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	database.ProductsCollection.Update(who, query)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Product's unit was successfully edited " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Единица измерения продукта была изменена " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }

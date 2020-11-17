@@ -33,8 +33,8 @@ func SetStartDailyMoneyHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if count, _ := database.DailyCashCollection.Find(query).Count(); count > 0 {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
-			"Today's cash is already set!" + emoji.Warning +
-			"\nBut you can change it by deleting today's start cash /remove_today_cash",
+			"На сегодня начальная касса уже была установлена!" + emoji.Warning +
+			"\nНо вы можете удалить это значение коммандой - /remove_today_cash",
 			keyboards.MainMenu)
 		bot.Send(answer)
 		return
@@ -42,7 +42,7 @@ func SetStartDailyMoneyHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	// ---> Promp User
 	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		"How much money you have in cashbox?"))
+		"Сколько денег у вас в кассе в начале дня?"))
 
 	SetStartDailyMoneyQueue[update.CallbackQuery.From.ID] = true	
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
@@ -53,7 +53,7 @@ func SetStartDailyMoney(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	money, err := strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Wrong type format! {"+err.Error()+"}"))
+			emoji.Warning+" Неверный тип данных! Попробуйте ещё раз!"))
 		return
 	}
 	delete(SetStartDailyMoneyQueue, update.Message.From.ID)
@@ -72,7 +72,7 @@ func SetStartDailyMoney(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		return
 	}
 
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Succesfully set! " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Успешно установлено! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -81,7 +81,7 @@ func EndDayHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	todaySum := utils.GetTodayAllMoney()
 
-	message := fmt.Sprintf("How much money you want to put in general cashbox?\n\nYou have *%.2f UAH* in daily cash",
+	message := fmt.Sprintf("Сколько денег вы хотите добавить к главной кассе?\n\nУ вас есть *%.2f UAH* в дневной кассе",
 		todaySum)
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, message)
 	answer.ParseMode = "MarkDown"
@@ -96,7 +96,7 @@ func EndDay(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	money, err := strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Wrong type format! Try again!"))
+			"Неверный тип данных! Попробуйте ещё раз"))
 		return
 	}
 	
@@ -106,11 +106,12 @@ func EndDay(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	
 	if money > totalSum {
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			emoji.Warning+" You can't take more money than daily cash has! Try again:"))
+			emoji.Warning+" Вы не можете указать больше денег чем в дневной кассе! Попробуйте ещё раз:"))
 		return
 	} else if money < 0 {
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			emoji.Warning+" You can't take negative value of money"))
+			emoji.Warning+" Отрицательного количества денег не существует!\nВы в школе учились?\n"+
+			"Попробуйте ещё раз у вас всё получиться!"))
 		return
 	}
 	delete(EndDayQueue, update.Message.From.ID)
@@ -118,7 +119,7 @@ func EndDay(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var transaction betypes.Transaction
 
 
-	transaction.Comment = "End of a day!"
+	transaction.Comment = "Стандартное Завершение дня!"
 	transaction.Diff = money
 	transaction.Author = fmt.Sprintf("%s %s (@%s)",
 		update.Message.From.FirstName, update.Message.From.LastName, update.Message.From.UserName)
@@ -136,7 +137,7 @@ func EndDay(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
-		"You have succesfully ended a day! " + emoji.Check)
+		"Вы успешно завершили день! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }

@@ -20,7 +20,7 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
-		"Choose type of product...", typeChoiceKeyboard)
+		"Выберите тип продукта...", typeChoiceKeyboard)
 	bot.Send(answer)
 }
 
@@ -37,12 +37,12 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			tgbotapi.NewInlineKeyboardButtonData(prod.Name, "supname "+prod.ID.Hex()),
 		})
 	}
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{keyboards.MainMenuButton})
 
 	var productsKeyboard = tgbotapi.NewInlineKeyboardMarkup(rows...)
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
-		"Choose product...",
+		"Выберите продукт...",
 		productsKeyboard)
 	bot.Send(answer)
 }
@@ -55,13 +55,13 @@ func ReceiveSuppliesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
 	
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Supply quantity:"))
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Количесво?"))
 }
 
 func MakeSupply(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	supplyValue, err := strconv.ParseFloat(update.Message.Text, 4)
 	if err != nil {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format!" + emoji.Warning)
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз:" + emoji.Warning)
 		bot.Send(answer)
 	}
 
@@ -96,7 +96,7 @@ func MakeSupply(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	database.ProductsCollection.UpdateAll(whoIfLess0, queryIfLess0)
 
 
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Supply was succesfully received! " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Поставка была успешно получена! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }

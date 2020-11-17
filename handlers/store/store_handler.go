@@ -19,7 +19,7 @@ var SupplyQueue = make(map[int]bson.ObjectId)
 func StoreHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	emojiRow := utils.MakeEmojiRow(emoji.Package,6)
 
-	message := fmt.Sprintf("%s\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t*STORE*\n%s\n", emojiRow, emojiRow)
+	message := fmt.Sprintf("%s\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t*Склад*\n%s\n", emojiRow, emojiRow)
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID, message, keyboards.StoreKeyboard)
@@ -60,7 +60,7 @@ func ShowStorageHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			t + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + emoji.PawPrint + "*\n"
 		}
 
-		message += fmt.Sprintf("%02d) %s*%s* - in stock: *%v %s*\n",
+		message += fmt.Sprintf("%02d) %s*%s* - на складе: *%v %s*\n",
 			i + 1, alert, prod.Name, prod.InStorage, prod.Unit)
 	}
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,

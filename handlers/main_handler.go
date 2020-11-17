@@ -15,7 +15,7 @@ import (
 func MainMenuHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	deleteAllQueues(update.CallbackQuery.From.ID)
 
-	message := "........."+emoji.House+"......."+emoji.Tree+"..*Main Menu*........"+
+	message := "........."+emoji.House+"......."+emoji.Tree+"..*Главное меню*........"+
 		emoji.HouseWithGarden+"..."+emoji.Car+"...."
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,

@@ -27,12 +27,12 @@ func RemoveProductHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	err := database.ProductsCollection.Remove(bson.M{"_id": bson.ObjectIdHex(prodID)})
 	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Removing has been FAILED! {"+err.Error()+"}"))
+		bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, emoji.Warning+" Ошибка при удалении продукта! {"+err.Error()+"}"))
 		return
 	}
 
 
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "The product has been removed succesfully!")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Продукт был успешно удалён! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 
 	bot.Send(answer)
@@ -42,7 +42,7 @@ func RemoveProductHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 func AddProductHandler(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 	AddProductQueue[update.CallbackQuery.From.ID] = new(betypes.Product)
 
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Enter product name:"))
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Введите название продукта:"))
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
 }
@@ -57,7 +57,7 @@ func AddProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if prod.Name == "" {
 		prod.Name = update.Message.Text
 
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Choose product type:")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите тип продукта:")
 		
 		typesKeyboard := keyboards.GetTypesKeyboard("protyp")
 		typesKeyboard.InlineKeyboard = append(typesKeyboard.InlineKeyboard,
@@ -68,24 +68,24 @@ func AddProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	} else if prod.Unit == "" {
 		prod.Unit = update.Message.Text
 
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Enter prime cost")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите *себестоимость* продукта")
 		answer.ParseMode = "MarkDown"
 		bot.Send(answer)
 	} else if prod.PrimeCost == 0.0 {
 		prod.PrimeCost, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз:"))
 			return
 		}
 
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Enter *selling price* price:")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите *цену продажи*:")
 		answer.ParseMode = "MarkDown"
 		bot.Send(answer)
 		
 	} else {
 		prod.Price, err = strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз:"))
 			return
 		}
 
@@ -94,9 +94,9 @@ func AddProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		prod.Margin = (prod.Price - prod.PrimeCost) / prod.Price * 100
 		err = database.ProductsCollection.Insert(prod)
 		if err != nil {
-			answer = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Product has not beed added {"+err.Error()+"}")
+			answer = tgbotapi.NewMessage(update.Message.Chat.ID, emoji.Warning+" Не удалось создать продукт! {"+err.Error()+"}")
 		} else {
-			answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Product has been added succesfully! " + emoji.Check)
+			answer = tgbotapi.NewMessage(update.Message.Chat.ID, "Продукт был успешно создан! " + emoji.Check)
 		}
 
 		delete(AddProductQueue, userID)
@@ -110,7 +110,7 @@ func AddTypeToProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	AddProductQueue[update.CallbackQuery.From.ID].Type = t
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		"Set please unit for this product")
+		"Укажите единицу измерения:")
 	bot.Send(answer)
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
@@ -119,7 +119,7 @@ func AddTypeToProduct(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 
 func GetAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Choose product type:")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Выберите тип продукта:")
 		
 	typesKeyboard := keyboards.GetTypesKeyboard("getprodstyp")
 	typesKeyboard.InlineKeyboard = append(typesKeyboard.InlineKeyboard,
@@ -140,15 +140,15 @@ func GetAllProducts(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	database.ProductsCollection.Find(bson.M{"type":t}).Select(m{"purchases": 0}).Sort("name").All(&products)
 
 	for i, prod := range products {
-		message := fmt.Sprintf("======================\nProduct #%d\nProduct name: *%s*\nProduct type: *%s*\n"+
-		"Product prime cost: *%.2f*\nProduct price: *%.2f*\nMargin: *%.2f %%*\nUnit: *%s\n*",
+		message := fmt.Sprintf("======================\nПродукт #%d\nНазвание: *%s*\nТип: *%s*\n"+
+		"Себестоимость: *%.2f*\nЦена продажи: *%.2f*\nМаржа: *%.2f %%*\nЕдиница измерения: *%s\n*",
 			i, prod.Name, prod.Type, prod.PrimeCost, prod.Price, prod.Margin, prod.Unit)
 		answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, message)
 		answer.ParseMode = "Markdown"
 		prodKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Remove "+emoji.Minus, "remove_product "+prod.ID.Hex()),
-				tgbotapi.NewInlineKeyboardButtonData("Edit "+emoji.Pencil, "edit_product "+prod.ID.Hex()),
+				tgbotapi.NewInlineKeyboardButtonData("Удалить "+emoji.Minus, "remove_product "+prod.ID.Hex()),
+				tgbotapi.NewInlineKeyboardButtonData("Изменить "+emoji.Pencil, "edit_product "+prod.ID.Hex()),
 			),
 		)
 		answer.ReplyMarkup = prodKeyboard
@@ -157,7 +157,7 @@ func GetAllProducts(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Here you come!")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Вот и все продукты!")
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }

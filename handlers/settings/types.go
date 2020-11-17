@@ -25,7 +25,7 @@ func AddNewTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	AddTypeQueue[update.CallbackQuery.From.ID] = true
 
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, 
-		"Enter new type:")
+		"Введите новый тип продукта:")
 	bot.Send(answer)
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
@@ -44,7 +44,7 @@ func AddNewType(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	delete(AddProductQueue, update.Message.From.ID)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "New type has been succesfully added! " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Новый тип продукта был создан! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -61,7 +61,7 @@ func ShowAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	var message string
 	for i, t := range types {
-		message += fmt.Sprintf("---------------------------------------\nType #%d: *%s*\n\n%v\n", i + 1, t.Type, t.ID)
+		message += fmt.Sprintf("---------------------------------------\nТип продукта #%d: *%s*\n\n%v\n", i + 1, t.Type, t.ID)
 	}
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
@@ -75,7 +75,7 @@ func ShowAllProductsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 func RemoveTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	RemoveTypeQueue[update.CallbackQuery.From.ID] = true
 
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me name of type you want to remove:")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Введите тип продукта который вы хотите удалить:")
 	bot.Send(answer)
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
@@ -112,7 +112,7 @@ func RemoveType(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	delete(RemoveTypeQueue, update.Message.From.ID)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Type has been succesfully removed!" + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Тип продукта был успешно удалён!" + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }

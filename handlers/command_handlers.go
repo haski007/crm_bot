@@ -30,7 +30,7 @@ func CommandMenuHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	deleteAllQueues(update.Message.From.ID)
 
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
-		"........."+emoji.House+"......."+emoji.Tree+"..Main Menu........"+
+		"........."+emoji.House+"......."+emoji.Tree+"..Главное меню........"+
 			emoji.HouseWithGarden+"..."+emoji.Car+"....")
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
@@ -54,7 +54,7 @@ func CommandStartHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 func CommandUsersHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.Message.From) {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You have not enough permissions!")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "У вас недостаточно прав!")
 		answer.ReplyMarkup = keyboards.MainMenu
 		bot.Send(answer)
 		return
@@ -71,8 +71,8 @@ func CommandUsersHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	var message string
 	for i, user := range users {
-		message += fmt.Sprintf("------------------------------------\n"+"User #%d\n"+
-			"First Name: %s\nLast Name: %s\nUsername: @%s\nUser status: %s\nUser id: %d\n%v\n", i+1,
+		message += fmt.Sprintf("------------------------------------\n"+"Пользователь #%d\n"+
+			"Имя: %s\nФамилия: %s\nНикнейм: @%s\nСтатус пользователя: %s\nID пользователя: %d\n%v\n", i+1,
 			user.FirstName, user.LastName, user.UserName, user.Status, user.UserID, user.ID)
 	}
 
@@ -82,7 +82,7 @@ func CommandUsersHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 func CommandRemoveUserHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.Message.From) {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You have not enough permissions!")
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "У вас недостаточно прав!")
 		answer.ReplyMarkup = keyboards.MainMenu
 		bot.Send(answer)
 		return
@@ -100,7 +100,7 @@ func CommandRemoveUserHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 	}
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
-		strconv.Itoa(len(args))+" users has been removed!"+emoji.Recycling+"\n")
+		strconv.Itoa(len(args))+" пользователь был удалён!"+emoji.Recycling+"\n")
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }
@@ -124,7 +124,7 @@ func RemoveTodayCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 func CommandAlertEverybodyHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.Message.From) {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You haven't enough permissions! " + emoji.NoEntry)
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "У вас недостаточно прав! " + emoji.NoEntry)
 		answer.ReplyMarkup = keyboards.MainMenu
 		bot.Send(answer)
 		return
@@ -137,7 +137,7 @@ func CommandAlertEverybodyHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) 
 
 func CommandAlertAdminsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.Message.From) {
-		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "You haven't enough permissions! " + emoji.NoEntry)
+		answer := tgbotapi.NewMessage(update.Message.Chat.ID, "У вас недостаточно прав! " + emoji.NoEntry)
 		answer.ReplyMarkup = keyboards.MainMenu
 		bot.Send(answer)
 		return

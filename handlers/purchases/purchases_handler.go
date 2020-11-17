@@ -31,7 +31,7 @@ func GetProductTypesHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
-		"Choose type of product...", typeChoiceKeyboard)
+		"Выберите тип продукта...", typeChoiceKeyboard)
 	bot.Send(answer)
 }
 
@@ -48,12 +48,12 @@ func GetProductsByTypeHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			tgbotapi.NewInlineKeyboardButtonData(prod.Name, "purname "+prod.ID.Hex()),
 		})
 	}
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("Main menu "+emoji.House, "home")})
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{keyboards.MainMenuButton})
 
 	var productsKeyboard = tgbotapi.NewInlineKeyboardMarkup(rows...)
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID,
-		"Choose product...",
+		"Выберите продукт...",
 		productsKeyboard)
 	bot.Send(answer)
 }
@@ -62,12 +62,16 @@ func MakePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	getID := strings.Split(update.CallbackQuery.Data, " ")[1]
 	productID := bson.ObjectIdHex(getID)
+
+	var prod betypes.Product
+	database.ProductsCollection.Find(m{"_id":productID}).Select(m{"unit":1}).One(&prod)
 	
 	MakePurchaseQueue[update.CallbackQuery.From.ID] = productID
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
 	
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Sold amount:"))
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
+		"Сколько было продано продукта в '"+prod.Unit+"':"))
 }
 
 func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
@@ -77,7 +81,8 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 
 	purchase.Amount, err = strconv.ParseFloat(update.Message.Text, 64)
 	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
+			emoji.NoEntry+"Неверный тип данных! Попробуйте ещё раз!"+emoji.NoEntry))
 		return
 	}
 
@@ -128,16 +133,16 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 			bot.Send(answer)
 			return
 		}
-		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
+		message += fmt.Sprintf("*WARNING %s:* %v единиц %s осталось на складе!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
 		
 		go utils.SendInfoToAdmins(bot, message)
 	} else if prod.InStorage < 10.0 {
-		message += fmt.Sprintf("*WARNING %s:* %v units of %s left on stock!\n",
+		message += fmt.Sprintf("*WARNING %s:* %v единиц %s осталось на складе!\n",
 			emoji.Warning, prod.InStorage, prod.Name)
 		go utils.SendInfoToAdmins(bot, message)
 	} 
-	message += "Purchase has been added succesfully " + emoji.Check
+	message += "Покупка была совешена успешно " + emoji.Check
 
 	delete(MakePurchaseQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
@@ -149,7 +154,7 @@ func MakePurchase(bot *tgbotapi.BotAPI,update tgbotapi.Update) {
 
 func RemovePurchaseHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	RemovePurchaseQueue[update.CallbackQuery.From.ID] = true
-	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Send me id of purchase you want to remove:")
+	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Пришлите objectID покупки для удаления:")
 
 	bot.Send(answer)
 }
@@ -207,7 +212,7 @@ func RemovePurchase(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 
 	delete(RemovePurchaseQueue, update.Message.From.ID)
-	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "An purchase has been succesfully removed! " + emoji.Check)
+	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Покупка была успешно удалена! " + emoji.Check)
 	answer.ReplyMarkup = keyboards.MainMenu
 
 	bot.Send(answer)

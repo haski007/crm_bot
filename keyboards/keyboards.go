@@ -8,19 +8,19 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("Main Menu "+emoji.House, "home")
+var MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("Главное Меню "+emoji.House, "home")
 
 var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Purchase "+emoji.Dollar, "purchase"),
+		tgbotapi.NewInlineKeyboardButtonData("Продажа "+emoji.Dollar, "purchase"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Configuration "+emoji.Gear, "configs"),
-		tgbotapi.NewInlineKeyboardButtonData("Statistics "+emoji.GraphicIncrease, "stats"),
+		tgbotapi.NewInlineKeyboardButtonData("Настройки "+emoji.Gear, "configs"),
+		tgbotapi.NewInlineKeyboardButtonData("Статистика "+emoji.GraphicIncrease, "stats"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("The stock "+emoji.Package, "store"),
-		tgbotapi.NewInlineKeyboardButtonData("Cashbox "+emoji.MoneyFace, "cashbox"),
+		tgbotapi.NewInlineKeyboardButtonData("Склад "+emoji.Package, "store"),
+		tgbotapi.NewInlineKeyboardButtonData("Касса "+emoji.MoneyFace, "cashbox"),
 	),
 )
 
@@ -28,23 +28,23 @@ var MainMenu = tgbotapi.NewInlineKeyboardMarkup(
 // Create keyboard for configs.
 var SettingsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Add product "+emoji.Plus, "add_product"),
-		tgbotapi.NewInlineKeyboardButtonData("Show all products "+emoji.Box, "get_all_products"),
+		tgbotapi.NewInlineKeyboardButtonData("Создать продукт "+emoji.Plus, "add_product"),
+		tgbotapi.NewInlineKeyboardButtonData("Показать все продукты "+emoji.Box, "get_all_products"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Add new type "+emoji.NewButton, "add_type"),
-		tgbotapi.NewInlineKeyboardButtonData("Show all product types "+emoji.Info, "get_all_types"),
+		tgbotapi.NewInlineKeyboardButtonData("Добавить тип "+emoji.NewButton, "add_type"),
+		tgbotapi.NewInlineKeyboardButtonData("Показать все типы "+emoji.Info, "get_all_types"),
 	),
 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
 )
 
 var StatsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Month stats "+emoji.UpLeftArrow, "month_stats"),
+		tgbotapi.NewInlineKeyboardButtonData("Статистика за месяц "+emoji.UpLeftArrow, "month_stats"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Today's history"+emoji.UpLeftArrow, "curr_day_history"),
-		tgbotapi.NewInlineKeyboardButtonData("Today's stats"+emoji.GraphicIncrease, "curr_day_stats"),
+		tgbotapi.NewInlineKeyboardButtonData("История покупок"+emoji.UpLeftArrow, "curr_day_history"),
+		tgbotapi.NewInlineKeyboardButtonData("Статистика за день"+emoji.GraphicIncrease, "curr_day_stats"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,
@@ -53,7 +53,7 @@ var StatsKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var HistoryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Remove purchase "+emoji.Basket, "remove_purchase"),
+		tgbotapi.NewInlineKeyboardButtonData("Удалить покупку "+emoji.Basket, "remove_purchase"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,
@@ -62,15 +62,15 @@ var HistoryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var StoreKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("New supply " + emoji.Registered, "supply"),
-		tgbotapi.NewInlineKeyboardButtonData("Check storage " + emoji.QuestionMark, "check_storage"),
+		tgbotapi.NewInlineKeyboardButtonData("Поставка продукта " + emoji.Registered, "supply"),
+		tgbotapi.NewInlineKeyboardButtonData("Проверить склад " + emoji.QuestionMark, "check_storage"),
 	),
 	tgbotapi.NewInlineKeyboardRow(MainMenuButton),
 )
 
 var TypesListKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Remove type "+emoji.Basket, "remove_type"),
+		tgbotapi.NewInlineKeyboardButtonData("Удалить тип "+emoji.Basket, "remove_type"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,
@@ -79,15 +79,15 @@ var TypesListKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Add to Cashbox "+emoji.DollarBanknote, "plus_cash"),
-		tgbotapi.NewInlineKeyboardButtonData("Get from Cashbox "+emoji.MoneyWithWings, "minus_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("Пополнить кассу "+emoji.DollarBanknote, "plus_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("Взять с кассы "+emoji.MoneyWithWings, "minus_cash"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Transactions " + emoji.Receipt, "transactions"),
+		tgbotapi.NewInlineKeyboardButtonData("Все транзакции " + emoji.Receipt, "transactions"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Start day " + emoji.FileBox, "set_start_cash"),
-		tgbotapi.NewInlineKeyboardButtonData("End day " + emoji.EndArrow, "end_day"),
+		tgbotapi.NewInlineKeyboardButtonData("Начать день " + emoji.FileBox, "set_start_cash"),
+		tgbotapi.NewInlineKeyboardButtonData("Завершить день " + emoji.EndArrow, "end_day"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,
@@ -96,13 +96,13 @@ var CashboxKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var EditProductKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Name", "edit prod_name"),
-		tgbotapi.NewInlineKeyboardButtonData("Margin", "edit prod_margin"),
-		tgbotapi.NewInlineKeyboardButtonData("Prime Cost", "edit prod_prime"),
+		tgbotapi.NewInlineKeyboardButtonData("Название", "edit prod_name"),
+		tgbotapi.NewInlineKeyboardButtonData("Маржа", "edit prod_margin"),
+		tgbotapi.NewInlineKeyboardButtonData("Себестоимость", "edit prod_prime"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Price", "edit prod_price"),
-		tgbotapi.NewInlineKeyboardButtonData("Unit", "edit prod_unit"),
+		tgbotapi.NewInlineKeyboardButtonData("Цена", "edit prod_price"),
+		tgbotapi.NewInlineKeyboardButtonData("Единица", "edit prod_unit"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
 		MainMenuButton,

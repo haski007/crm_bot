@@ -21,6 +21,7 @@ type purchase struct {
 	prodName string
 	prodType string
 	amount float64
+	unit string
 	cash float64
 	profit float64
 	seller string
@@ -32,7 +33,7 @@ func GetStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 	update.CallbackQuery.Message.MessageID,
-	emoji.GraphicIncrease + " *STATISTICS* " + emoji.GraphicIncrease,
+	emoji.GraphicIncrease + " *Стастистика* " + emoji.GraphicIncrease,
 	keyboards.StatsKeyboard)
 
 	answer.ParseMode = "MarkDown"
@@ -69,7 +70,7 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		i := len(prod.Purchases) - 1
 		for i > -1 && prod.Purchases[i].SaleDate.After(fromDate) {
 			purchases = append(purchases, purchase{
-				prod.Name, prod.Type, prod.Purchases[i].Amount,
+				prod.Name, prod.Type, prod.Purchases[i].Amount, prod.Unit,
 				prod.Purchases[i].Amount*prod.Price,
 				prod.Purchases[i].Amount*prod.Price - prod.Purchases[i].Amount*prod.PrimeCost,
 				prod.Purchases[i].Seller,
@@ -92,8 +93,8 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	// ---> Build list of sorted purchases
 	var index int = 1
 	for _, pur := range purchases {
-		message += fmt.Sprintf("%sPurchase #%d\nProduct: %s\nType: %s\nSold: %v\nCash: %.2f\nProfit: %.2f\nSeller: %s\nSale Date: %v\n%s\n",
-		emoji.GreenDelimiter, index, pur.prodName, pur.prodType, pur.amount,
+		message += fmt.Sprintf("%sПокупка #%d\nПродукт: %s\nТип: %s\nПродано: %v %s\nДенег получено: %.2f\nЧистыми: %.2f\nПродавец: %s\nДата продажи: %v\n%s\n",
+		emoji.GreenDelimiter, index, pur.prodName, pur.prodType, pur.amount, pur.unit,
 		pur.cash,
 		pur.profit,
 		pur.seller,
@@ -107,11 +108,11 @@ func GetCurrentDayHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		answer = tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
 			message, keyboards.HistoryKeyboard)
-		answer.ParseMode = "MarkDown"
+		// answer.ParseMode = "MarkDown"
 	} else {
 		answer = tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
-			emoji.Warning + " There aren't purchases today yet! " + emoji.Warning,
+			emoji.Warning + " Сегодня пока небыло продаж! " + emoji.Warning,
 			keyboards.MainMenu)
 	}
 
@@ -122,17 +123,10 @@ func GetCurrentDayStatsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.CallbackQuery.From) {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
-			emoji.NoEntry + "You have not enough permissions" + emoji.NoEntry,
+			emoji.NoEntry + "У вас недостаточно прав!" + emoji.NoEntry,
 			keyboards.MainMenu) 
 		bot.Send(answer)
 		return
-	}
-
-	if !users.IsAdmin(update.CallbackQuery.From) {
-		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
-			update.CallbackQuery.Message.MessageID,
-			"You have not enough permissions!" + emoji.Warning, keyboards.MainMenu)
-		bot.Send(answer)
 	}
 	message := getDailyStatistics()
 

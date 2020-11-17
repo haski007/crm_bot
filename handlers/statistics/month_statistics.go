@@ -18,7 +18,7 @@ func MonthStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.CallbackQuery.From) {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
-			emoji.NoEntry + "You have not enough permissions" + emoji.NoEntry,
+			emoji.NoEntry + "У вас недостаточно прав" + emoji.NoEntry,
 			keyboards.MainMenu) 
 		bot.Send(answer)
 		return
@@ -26,7 +26,7 @@ func MonthStatisticsHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	MonthStatsQueue[update.CallbackQuery.From.ID] = true
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
-		`Enter month and year in format - "08.2020":`)
+		`Введите месяц в формате - "08.2020":`)
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))

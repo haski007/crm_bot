@@ -20,7 +20,8 @@ var (
 
 func RegisterUserHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if count, _ := database.UsersCollection.Find(bson.M{"user_id": update.Message.From.ID}).Count(); count > 0 {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "You are registered already!\nUse /menu"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Вы уже зарегестрированы!\n"+
+			"Используйте для использования бота /menu"))
 		return
 	}
 	
@@ -59,21 +60,21 @@ func RegisterUser(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		user.Status = "user"
 	}
 
-	go utils.SendInfoToAdmins(bot, fmt.Sprintf("New user has been registred: %s (@%s)\nAs *%s*",
+	go utils.SendInfoToAdmins(bot, fmt.Sprintf("Был зарегестрирован новый пользователь: %s (@%s)\nAs *%s*",
 		user.FirstName, user.UserName, user.Status))
 
 	
 	err := database.UsersCollection.Insert(user)
 	if err != nil {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Registration has been FAILED {"+err.Error()+"}"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Регистрация НЕ удалась! {"+err.Error()+"}"))
 		return
 	}
 	
 	
 	delete(RegisterUserQueue, update.Message.From.ID)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Hi, "+user.FirstName+":)\n"+
-		"You have been succesfully registered with id: "+strconv.Itoa(user.UserID)+"\n"+
-		"Start using bot by /menu")
+		"Вы были успешно зарегестрированы как '"+user.Status+"', ваш ID: "+strconv.Itoa(user.UserID)+"\n"+
+		"Начните пользоваться ботом - /menu")
 	answer.ReplyMarkup = keyboards.MainMenu
 	bot.Send(answer)
 }

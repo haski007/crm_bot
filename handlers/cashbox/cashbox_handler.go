@@ -28,7 +28,7 @@ func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if !users.IsAdmin(update.CallbackQuery.From) {
 		answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
 			update.CallbackQuery.Message.MessageID,
-			emoji.NoEntry + "You have not enough permissions" + emoji.NoEntry,
+			emoji.NoEntry + "У вас недостаточно прав!" + emoji.NoEntry,
 			keyboards.MainMenu) 
 		bot.Send(answer)
 		return
@@ -57,14 +57,14 @@ func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	var startMoneySTR string
 	if dailyCash.User == "" {
-		startMoneySTR = "Not set yet!"
+		startMoneySTR = "Пока нет!"
 	} else {
 		startMoneySTR = fmt.Sprintf("%.2f UAH", dailyCash.Money)
 	}
 
 	totalSum := utils.GetTodayAllMoney()
 
-	message := fmt.Sprintf("%s\nCashbox: *%.2f UAH*;\nToday's start money: *%s*\nToday's total sum: *%.2f UAH*\n%s",
+	message := fmt.Sprintf("%s\nКасса: *%.2f UAH*;\nДеньги в начале дня: *%s*\nЗа сегодня продано на: *%.2f UAH*\n%s",
 		emoji.MoneyFace, cashbox.Money, startMoneySTR, totalSum, emoji.MoneyFace)
 
 	answer := tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID,
@@ -77,7 +77,7 @@ func CashboxHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 func PlusCashHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	PlusCashQueue[update.CallbackQuery.From.ID] = new(betypes.Transaction)
-	message := "How much money do you want to add?"
+	message := "Сколько денег вы хотите положить в кассу?"
 
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
 		message)
@@ -91,13 +91,13 @@ func PlusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if PlusCashQueue[update.Message.From.ID].Diff == 0.0 {
 		m, err := strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again!")
+			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз!")
 			bot.Send(answer)
 			return
 		}
 
 		PlusCashQueue[update.Message.From.ID].Diff = m
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "What is you purpose?"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Какова ваша цель?"))
 		return
 	}
 	PlusCashQueue[update.Message.From.ID].Comment = update.Message.Text
@@ -124,15 +124,18 @@ func PlusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 	delete(PlusCashQueue, update.Message.From.ID)
 
+	var cash betypes.Cashbox
+	database.CashboxCollection.Find(who).Select(m{"money": 1}).One(&cash)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
-		"The transaction was successfully completed! "+  emoji.Check)
+		fmt.Sprintf("Транзакция успешно выполнена! %s\nТеперь в кассе: *%.2f UAH*", emoji.Check, cash.Money))
 	answer.ReplyMarkup = keyboards.MainMenu
+	answer.ParseMode = "MarkDown"
 	bot.Send(answer)
 }
 
 func MinusCashHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	MinusCashQueue[update.CallbackQuery.From.ID] = new(betypes.Transaction)
-	message := "How much money did you take?"
+	message := "Сколько денег вы хотите взять?"
 
 	answer := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
 		message)
@@ -146,13 +149,13 @@ func MinusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if MinusCashQueue[update.Message.From.ID].Diff == 0.0 {
 		m, err := strconv.ParseFloat(update.Message.Text, 64)
 		if err != nil {
-			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Wrong type format! Try again!")
+			answer := tgbotapi.NewMessage(update.Message.Chat.ID, "Неверный тип данных! Попробуйте ещё раз!")
 			bot.Send(answer)
 			return
 		}
 
 		MinusCashQueue[update.Message.From.ID].Diff = -m
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "What is you purpose?"))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Какова ваша цель?"))
 		return
 	}
 	MinusCashQueue[update.Message.From.ID].Comment = update.Message.Text
@@ -175,15 +178,20 @@ func MinusCash(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		
 	delete(MinusCashQueue, update.Message.From.ID)
 
+	who := m{"type": "general"}
+	var cash betypes.Cashbox
+	database.CashboxCollection.Find(who).Select(m{"money": 1}).One(&cash)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID,
-		"The transaction was successfully completed! "+  emoji.Check)
+		fmt.Sprintf("Транзакция успешно выполнена! %s\nТеперь в кассе: *%.2f UAH*", emoji.Check, cash.Money))
 	answer.ReplyMarkup = keyboards.MainMenu
+	answer.ParseMode = "MarkDown"
 	bot.Send(answer)
 }
 
 func TransactionsHistoryHandler(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	TransactionsHostoryQueue[update.CallbackQuery.From.ID] = true
-	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "How much day you what to see?"))
+	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID,
+		"Историю транзакций за сколько дней вы хотите видеть?"))
 
 	bot.DeleteMessage(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID,
 		update.CallbackQuery.Message.MessageID))
@@ -243,14 +251,14 @@ func ShowTransactionsHistory(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			message += emoji.RedDelimiter
 		}
 			
-		message += fmt.Sprintf("Transaction #%d\n%s: *%.2f UAH*\nAuthor: %s\nComment: *%s*\nDataTime: %s\n%v\n",
+		message += fmt.Sprintf("Тразакция #%d\n%s: *%.2f UAH*\nАвтор: %s\nКомментарий: *%s*\nДата: %s\n%v\n",
 			index, event, math.Abs(transactions[i].diff), transactions[i].author,
 			transactions[i].comment, transactions[i].datatime,
 			transactions[i].id)
 		index++
 	}
 	
-	message += fmt.Sprintf("\n%sMoney in Cashbox: *%.2f UAH*", emoji.DollarDelimiter, cashbox.Money)
+	message += fmt.Sprintf("\n%sДенег в кассе: *%.2f UAH*", emoji.DollarDelimiter, cashbox.Money)
 	answer := tgbotapi.NewMessage(update.Message.Chat.ID, message)
 	answer.ReplyMarkup = keyboards.MainMenu
 	answer.ParseMode = "MarkDown"

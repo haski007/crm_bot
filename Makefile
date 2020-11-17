@@ -19,11 +19,13 @@ clean:
 run:
 	$(GOBUILD) -o $(BINARY_NAME) -v ./...
 	./$(BINARY_NAME)
+
+env:
+	bash source ~/.bashrc
+
 deps:
 	$(GOGET) github.com/go-telegram-bot-api/telegram-bot-api
 	$(GOGET) github.com/globalsign/mgo
-	$(GOGET) go.mongodb.org/mongo-driver/bson/primitive
-	$(GOGET) github.com/Haski007/go-errors
 
 
 

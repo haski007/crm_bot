@@ -136,7 +136,7 @@ func main() {
 			} else if strings.Contains(update.CallbackQuery.Data, "edit ") {
 				settings.GetEntityToEdit(bot, update)
 			}
-
+			
 			if resp.Text != "" {
 				bot.Send(resp)
 			}
